@@ -7,6 +7,7 @@ import cors from "cors";
 import connectDB from "./db.js";
 import router from "./routes/salesRoutes.js";
 import productRouter from "./routes/productRoutes.js";
+import contactRoutes from "./routes/contactRoutes.js";
 
 dotenv.config();
 
@@ -23,6 +24,7 @@ app.use(express.json());
 // Routes
 app.use("/api/sales", router);
 app.use("/api/products", productRouter);
+app.use("/api/contact", contactRoutes);
 
 // Root endpoint
 app.get("/", (req, res) => {

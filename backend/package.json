@@ -6,9 +6,11 @@
   "main": "server.js",
   "scripts": {
     "start": "nodemon server.js"
-
   },
   "keywords": [],
   "author": "Ihthisham",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "nodemailer": "^7.0.6"
+  }
 }
