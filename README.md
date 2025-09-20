@@ -1,0 +1,1 @@
+Make sure to reuse the environment developed and the code base should not be modified. Make your own pages relevant to your system and refer the already created pages to get an idea and identify the database keys and users
