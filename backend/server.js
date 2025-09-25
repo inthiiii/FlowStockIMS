@@ -9,6 +9,7 @@ import router from "./routes/salesRoutes.js";
 import productRouter from "./routes/productRoutes.js";
 import contactRoutes from "./routes/contactRoutes.js";
 
+
 dotenv.config();
 
 // Connect to MongoDB
@@ -34,4 +35,10 @@ app.get("/", (req, res) => {
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+});
+
+// Error handler
+app.use((err, req, res, next) => {
+  console.error("❌ Server error:", err.stack);
+  res.status(500).json({ error: "Something went wrong" });
 });

@@ -1,8 +1,8 @@
 import Sale from "../models/salesModel.js";
+import Product from "../models/productModel.js";
 
-// @desc    Get all sales
-// @route   GET /api/sales
- const getAllSales = async (req, res) => {
+// Get all sales
+const getAllSales = async (req, res) => {
   try {
     const sales = await Sale.find().populate("product");
     res.status(200).json(sales);
@@ -11,9 +11,8 @@ import Sale from "../models/salesModel.js";
   }
 };
 
-// @desc    Get a single sale by ID
-// @route   GET /api/sales/:id
- const getSaleById = async (req, res) => {
+// Get sale by ID
+const getSaleById = async (req, res) => {
   try {
     const sale = await Sale.findById(req.params.id).populate("product");
     if (!sale) return res.status(404).json({ message: "Sale not found" });
@@ -23,24 +22,38 @@ import Sale from "../models/salesModel.js";
   }
 };
 
-// @desc    Create a new sale
-// @route   POST /api/sales
- const createSale = async (req, res) => {
-  const { product, customerName, customerEmail, quantity, pricePerUnit, paymentStatus } = req.body;
+// Get sales by Customer
+const getSalesByCustomer = async (req, res) => {
+  try {
+    const sales = await Sale.find({ customerName: req.params.name }).populate("product");
+    res.status(200).json(sales);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
+// Get sales by Date
+const getSalesByDate = async (req, res) => {
+  try {
+    const { date } = req.params;
+    const start = new Date(date);
+    const end = new Date(date);
+    end.setHours(23, 59, 59, 999);
+
+    const sales = await Sale.find({ saleDate: { $gte: start, $lte: end } }).populate("product");
+    res.status(200).json(sales);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Create Sale
+const createSale = async (req, res) => {
+  const { product, customerName, customerEmail, quantity, pricePerUnit, paymentStatus } = req.body;
   try {
     const totalAmount = quantity * pricePerUnit;
 
-    const sale = new Sale({
-      product,
-      customerName,
-      customerEmail,
-      quantity,
-      pricePerUnit,
-      totalAmount,
-      paymentStatus,
-    });
-
+    const sale = new Sale({ product, customerName, customerEmail, quantity, pricePerUnit, totalAmount, paymentStatus });
     const savedSale = await sale.save();
     res.status(201).json(savedSale);
   } catch (error) {
@@ -48,9 +61,8 @@ import Sale from "../models/salesModel.js";
   }
 };
 
-// @desc    Update a sale
-// @route   PUT /api/sales/:id
- const updateSale = async (req, res) => {
+// Update Sale
+const updateSale = async (req, res) => {
   try {
     const sale = await Sale.findById(req.params.id);
     if (!sale) return res.status(404).json({ message: "Sale not found" });
@@ -72,9 +84,8 @@ import Sale from "../models/salesModel.js";
   }
 };
 
-// @desc    Delete a sale
-// @route   DELETE /api/sales/:id
- const deleteSale = async (req, res) => {
+// Delete Sale
+const deleteSale = async (req, res) => {
   try {
     const sale = await Sale.findById(req.params.id);
     if (!sale) return res.status(404).json({ message: "Sale not found" });
@@ -86,15 +97,19 @@ import Sale from "../models/salesModel.js";
   }
 };
 
-// @desc    Get sales by customer name
-// @route   GET /api/sales/customer/:name
- const getSalesByCustomer = async (req, res) => {
+// Mark Sale as Returned
+const returnSale = async (req, res) => {
   try {
-    const sales = await Sale.find({ customerName: req.params.name }).populate("product");
-    res.status(200).json(sales);
+    const sale = await Sale.findById(req.params.id);
+    if (!sale) return res.status(404).json({ message: "Sale not found" });
+
+    sale.paymentStatus = "Returned";
+    await sale.save();
+
+    res.status(200).json({ message: "Sale marked as Returned", sale });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-export { getAllSales, getSaleById, createSale, updateSale, deleteSale, getSalesByCustomer };
+export { getAllSales, getSaleById, createSale, updateSale, deleteSale, getSalesByCustomer, getSalesByDate, returnSale };

@@ -1,10 +1,9 @@
 import mongoose from "mongoose";
 
-// Schema for a sales transaction
 const saleSchema = new mongoose.Schema({
   product: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Product", // Reference to the Product model
+    ref: "Product",
     required: true,
   },
   customerName: {
@@ -35,7 +34,7 @@ const saleSchema = new mongoose.Schema({
   },
   paymentStatus: {
     type: String,
-    enum: ["Pending", "Paid", "Cancelled"],
+    enum: ["Pending", "Paid", "Cancelled", "Returned"],
     default: "Pending",
   },
 }, { timestamps: true });

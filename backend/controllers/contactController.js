@@ -1,16 +1,29 @@
 import ContactMessage from "../models/ContactMessage.js";
 import nodemailer from "nodemailer";
 
+// Send a contact message
 export const sendMessage = async (req, res) => {
   try {
-    const message = new ContactMessage(req.body);
-    await message.save();
+    const { name, email, number, message } = req.body;
+
+    // Validate input
+    if (!name || !email || !number || !message) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
+
+    console.log("📩 Incoming contact message:", req.body); // Debug
+
+    const newMessage = new ContactMessage({ name, email, number, message });
+    await newMessage.save();
+
     res.status(201).json({ message: "Message sent successfully" });
   } catch (err) {
+    console.error("❌ Error saving contact message:", err);
     res.status(500).json({ error: err.message });
   }
 };
 
+// Get all messages
 export const getMessages = async (req, res) => {
   try {
     const messages = await ContactMessage.find().sort({ createdAt: -1 });
@@ -20,6 +33,7 @@ export const getMessages = async (req, res) => {
   }
 };
 
+// Delete a message
 export const deleteMessage = async (req, res) => {
   try {
     await ContactMessage.findByIdAndDelete(req.params.id);
@@ -29,6 +43,7 @@ export const deleteMessage = async (req, res) => {
   }
 };
 
+// Reply to a message via email
 export const replyMessage = async (req, res) => {
   try {
     const { reply } = req.body;
@@ -36,7 +51,6 @@ export const replyMessage = async (req, res) => {
 
     if (!message) return res.status(404).json({ error: "Message not found" });
 
-    // Setup Gmail transport
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
