@@ -3,7 +3,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 // import connectDB from "./config/db.js";
-// import userRoutes from "./routes/userRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
 import connectDB from "./db.js";
 import router from "./routes/salesRoutes.js";
 import productRouter from "./routes/productRoutes.js";
@@ -26,6 +26,7 @@ app.use(express.json());
 app.use("/api/sales", router);
 app.use("/api/products", productRouter);
 app.use("/api/contact", contactRoutes);
+app.use("/api/users", userRoutes)
 
 // Root endpoint
 app.get("/", (req, res) => {

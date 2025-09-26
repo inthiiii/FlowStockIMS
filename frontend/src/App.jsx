@@ -15,6 +15,7 @@ import SalesListPage from "./pages/SalesListPage";
 import AddSalePage from "./pages/AddSalePage";
 import SaleDetailsPage from "./pages/SaleDetailsPage";
 import ReceiptPage from "./pages/ReceiptPage";
+import LoginPage from "./pages/LoginPage";
 
 const App = () => {
   return (
@@ -26,6 +27,8 @@ const App = () => {
             <Route path="/" element={<HomePage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/contact" element={<ContactPage />} />
+            <Route path="/login" element={<LoginPage/>} />
+            
 
             {/* Contact Us Receive Route */}  
             <Route path="/contact/viewcontact" element={<ContactUsReceivePage />} />
