@@ -1,4 +1,5 @@
 import express from "express";
+import multer from "multer";
 import {
   getProducts,
   createProduct,
@@ -9,13 +10,26 @@ import {
 
 const productRouter = express.Router();
 
+// Configure Multer for file storage
+const storage = multer.diskStorage({
+  destination(req, file, cb) {
+    cb(null, "uploads/");
+  },
+  filename(req, file, cb) {
+    cb(null, Date.now() + "-" + file.originalname);
+  },
+});
+
+const upload = multer({ storage });
+
+// Routes
 productRouter.route("/")
-  .get(getProducts)   // GET all products
-  .post(createProduct); // POST create product
+  .get(getProducts)
+  .post(upload.single("image"), createProduct);
 
 productRouter.route("/:id")
-  .get(getProductById)  // GET product by ID
-  .put(updateProduct)   // PUT update product
-  .delete(deleteProduct); // DELETE product
+  .get(getProductById)
+  .put(updateProduct)
+  .delete(deleteProduct);
 
 export default productRouter;

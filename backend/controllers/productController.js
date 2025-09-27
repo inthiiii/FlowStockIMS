@@ -13,6 +13,7 @@ export const getProducts = async (req, res) => {
 
 // @desc Create a product
 // @route POST /api/products
+// Create product
 export const createProduct = async (req, res) => {
   try {
     const { productName, productID, description, quantity, reOrderLevel, modelName } = req.body;
@@ -24,6 +25,7 @@ export const createProduct = async (req, res) => {
       quantity,
       reOrderLevel,
       modelName,
+      image: req.file ? `/uploads/${req.file.filename}` : null, // optional image
     });
 
     const createdProduct = await product.save();

@@ -1,14 +1,13 @@
-// server.js
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
-// import connectDB from "./config/db.js";
-// import userRoutes from "./routes/userRoutes.js";
+import path from "path";
+import { fileURLToPath } from "url";
+
 import connectDB from "./db.js";
 import router from "./routes/salesRoutes.js";
 import productRouter from "./routes/productRoutes.js";
 import contactRoutes from "./routes/contactRoutes.js";
-
 
 dotenv.config();
 
@@ -22,6 +21,11 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
+// Serve uploaded images
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
+
 // Routes
 app.use("/api/sales", router);
 app.use("/api/products", productRouter);
@@ -32,13 +36,13 @@ app.get("/", (req, res) => {
   res.send("API is running...");
 });
 
-// Start the server
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
-
 // Error handler
 app.use((err, req, res, next) => {
   console.error("❌ Server error:", err.stack);
   res.status(500).json({ error: "Something went wrong" });
+});
+
+// Start the server
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });

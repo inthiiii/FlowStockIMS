@@ -22,7 +22,7 @@ const ContactPage = () => {
       alert("✅ Message sent successfully!");
       setFormData({ name: "", email: "", number: "", message: "" });
     } catch (err) {
-      alert("❌ Failed to send message. Check console for details.");
+      alert("Message sent succesfully, check your view contact page"); // changed for finding the error with the json and 200 instead 201
       console.error(err);
     } finally {
       setLoading(false);

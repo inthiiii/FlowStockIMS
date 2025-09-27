@@ -16,6 +16,11 @@ import AddSalePage from "./pages/AddSalePage";
 import SaleDetailsPage from "./pages/SaleDetailsPage";
 import ReceiptPage from "./pages/ReceiptPage";
 
+// Product Pages
+import ProductAdd from "./pages/ProductAdd";
+import ProductControl from "./pages/ProductControl";
+
+
 const App = () => {
   return (
     <Router>
@@ -36,6 +41,10 @@ const App = () => {
             <Route path="/sales/add" element={<AddSalePage />} />
             <Route path="/sales/:id" element={<SaleDetailsPage />} />
             <Route path="/sales/:id/receipt" element={<ReceiptPage />} />
+
+            {/* Product Routes */}
+            <Route path="/products/entry" element={<ProductAdd />} />
+            <Route path="/products/control" element={<ProductControl />} />
 
           </Routes>
         </main>
