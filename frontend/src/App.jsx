@@ -1,3 +1,4 @@
+// src/App.jsx
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
@@ -16,6 +17,10 @@ import AddSalePage from "./pages/AddSalePage";
 import SaleDetailsPage from "./pages/SaleDetailsPage";
 import ReceiptPage from "./pages/ReceiptPage";
 
+// Log and Attendance Pages
+import AddInternalUserPage from "./pages/AddInternalUserPage";
+import AttendanceManagementPage from "./pages/AttendanceManagementPage";
+
 const App = () => {
   return (
     <Router>
@@ -26,17 +31,16 @@ const App = () => {
             <Route path="/" element={<HomePage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/contact" element={<ContactPage />} />
-
-            {/* Contact Us Receive Route */}  
             <Route path="/contact/viewcontact" element={<ContactUsReceivePage />} />
-
             {/* Sales Routes */}
             <Route path="/sales/dashboard" element={<SalesDashboardPage />} />
             <Route path="/sales/list" element={<SalesListPage />} />
             <Route path="/sales/add" element={<AddSalePage />} />
             <Route path="/sales/:id" element={<SaleDetailsPage />} />
             <Route path="/sales/:id/receipt" element={<ReceiptPage />} />
-
+            {/* Log and Attendance Routes */}
+            <Route path="/internal-users/add" element={<AddInternalUserPage />} />
+            <Route path="/attendance/manage" element={<AttendanceManagementPage />} />
           </Routes>
         </main>
         <Footer />
