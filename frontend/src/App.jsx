@@ -7,6 +7,7 @@ import Footer from "./components/Footer";
 import HomePage from "./pages/HomePage";  
 import AboutPage from "./pages/AboutPage";
 import ContactPage from "./pages/ContactPage";
+import ProductView from "./pages/ProductView";
 import ContactUsReceivePage from "./pages/ContactUsReceivePage";
 
 // Sales Pages
@@ -31,6 +32,7 @@ const App = () => {
             <Route path="/" element={<HomePage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/contact" element={<ContactPage />} />
+            <Route path="/products" element={<ProductView />} />
 
             {/* Contact Us Receive Route */}  
             <Route path="/contact/viewcontact" element={<ContactUsReceivePage />} />
