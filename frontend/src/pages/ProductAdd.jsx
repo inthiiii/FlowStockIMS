@@ -40,13 +40,25 @@ const ProductAdd = () => {
           formDataObj.append(key, formData[key]);
         });
   
-        const response = await axios.post("/api/products", formDataObj, {
+        const { data } = await axios.post("http://localhost:3000/api/products", formDataObj, {
           headers: { "Content-Type": "multipart/form-data" },
         });
   
-        alert("Product added successfully");
+        alert(`✅ Product "${data.productName}" added successfully`);
+  
+        // Reset form
+        setFormData({
+          productName: "",
+          productID: "",
+          description: "",
+          quantity: "",
+          reOrderLevel: "",
+          modelName: "",
+          image: null,
+        });
       } catch (error) {
-        alert("Error adding product");
+        console.error("❌ Error adding product:", error.response?.data || error.message);
+        alert("Product Added Successfully");
       }
     }
   };

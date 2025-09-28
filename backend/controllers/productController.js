@@ -13,38 +13,43 @@ export const getProducts = async (req, res) => {
 
 // @desc Create a product
 // @route POST /api/products
-// Create product
 export const createProduct = async (req, res) => {
   try {
     const { productName, productID, description, quantity, reOrderLevel, modelName } = req.body;
+
+    // Convert numbers (multer gives strings)
+    const qty = Number(quantity);
+    const reorder = Number(reOrderLevel);
+
+    if (!productName || !productID || !qty || !reorder || !modelName) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
 
     const product = new Product({
       productName,
       productID,
       description,
-      quantity,
-      reOrderLevel,
+      quantity: qty,
+      reOrderLevel: reorder,
       modelName,
-      image: req.file ? `/uploads/${req.file.filename}` : null, // optional image
+      image: req.file ? `/uploads/${req.file.filename}` : null,
     });
 
     const createdProduct = await product.save();
     res.status(201).json(createdProduct);
   } catch (error) {
+    console.error("❌ Error creating product:", error.message);
     res.status(400).json({ message: error.message });
   }
 };
 
-// @desc Get single product by ID
+// @desc Get single product
 // @route GET /api/products/:id
 export const getProductById = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
-    if (product) {
-      res.json(product);
-    } else {
-      res.status(404).json({ message: "Product not found" });
-    }
+    if (product) res.json(product);
+    else res.status(404).json({ message: "Product not found" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -60,10 +65,14 @@ export const updateProduct = async (req, res) => {
       product.productName = req.body.productName || product.productName;
       product.productID = req.body.productID || product.productID;
       product.description = req.body.description || product.description;
-      product.quantity = req.body.quantity || product.quantity;
-      product.reOrderLevel = req.body.reOrderLevel || product.reOrderLevel;
+      product.quantity = req.body.quantity ? Number(req.body.quantity) : product.quantity;
+      product.reOrderLevel = req.body.reOrderLevel ? Number(req.body.reOrderLevel) : product.reOrderLevel;
       product.modelName = req.body.modelName || product.modelName;
 
+      if (req.file) {
+        product.image = `/uploads/${req.file.filename}`;
+      }
+      
       const updatedProduct = await product.save();
       res.json(updatedProduct);
     } else {

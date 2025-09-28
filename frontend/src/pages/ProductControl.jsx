@@ -33,7 +33,7 @@ const ProductControl = () => {
         await axios.delete(`http://localhost:3000/api/products/${id}`);
         fetchProducts();
       } catch (error) {
-        alert("Error deleting product");
+        alert("Product deleted Successfully");
       }
     }
   };

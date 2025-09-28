@@ -20,7 +20,7 @@ import ReceiptPage from "./pages/ReceiptPage";
 // Product Pages
 import ProductAdd from "./pages/ProductAdd";
 import ProductControl from "./pages/ProductControl";
-
+import EditProduct from "./pages/EditProduct";
 
 const App = () => {
   return (
@@ -47,6 +47,7 @@ const App = () => {
             {/* Product Routes */}
             <Route path="/products/entry" element={<ProductAdd />} />
             <Route path="/products/control" element={<ProductControl />} />
+            <Route path="/product/:id" element={<EditProduct />} />
 
           </Routes>
         </main>

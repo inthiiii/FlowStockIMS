@@ -1,3 +1,4 @@
+// routes/productRoutes.js
 import express from "express";
 import multer from "multer";
 import {
@@ -10,7 +11,7 @@ import {
 
 const productRouter = express.Router();
 
-// Configure Multer for file storage
+// Multer setup
 const storage = multer.diskStorage({
   destination(req, file, cb) {
     cb(null, "uploads/");
@@ -19,7 +20,6 @@ const storage = multer.diskStorage({
     cb(null, Date.now() + "-" + file.originalname);
   },
 });
-
 const upload = multer({ storage });
 
 // Routes
@@ -29,7 +29,7 @@ productRouter.route("/")
 
 productRouter.route("/:id")
   .get(getProductById)
-  .put(updateProduct)
+  .put(upload.single("image"), updateProduct) // ✅ enable image upload in update
   .delete(deleteProduct);
 
 export default productRouter;

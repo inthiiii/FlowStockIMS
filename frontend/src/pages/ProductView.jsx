@@ -444,6 +444,20 @@ const ProductView = () => {
                   <div style={styles.productId}>ID: {product.productID}</div>
                 </div>
 
+                {product.productImage && (
+                  <img
+                    src={`http://localhost:3000/${product.productImage}`}
+                    alt={product.productName}
+                    style={{
+                      width: "100%",
+                      height: "200px",
+                      objectFit: "cover",
+                      borderRadius: "12px",
+                      marginBottom: "15px"
+                    }}
+                  />
+                )}
+
                 <p style={styles.productDescription}>
                   {product.description || "No description available"}
                 </p>
