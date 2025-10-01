@@ -5,6 +5,10 @@ const SalesDashboardPage = () => {
   const [sales, setSales] = useState([]);
   const [loading, setLoading] = useState(true);
 
+    // AI insights state
+    const [insights, setInsights] = useState([]);
+    const [analyzing, setAnalyzing] = useState(false);
+
   useEffect(() => {
     const fetchSales = async () => {
       try {
@@ -88,7 +92,7 @@ const SalesDashboardPage = () => {
       Paid: 0,
       Pending: 0,
       Cancelled: 0,
-      Refunded: 0
+      Returned: 0
     };
 
     sales.forEach(sale => {
@@ -105,6 +109,73 @@ const SalesDashboardPage = () => {
   const returnsData = getReturnsData();
   const paymentBreakdown = getPaymentBreakdown();
   const maxWeeklyAmount = Math.max(...weeklyData.map(d => d.amount), 1);
+
+    // 🧠 AI-like insights generator (runs locally on client)
+    const analyzeSales = () => {
+      setAnalyzing(true);
+  
+      // small delay to show "Analyzing..." UI; remove setTimeout if you want instant
+      setTimeout(() => {
+        const insightsList = [];
+  
+        // best/worst day
+        const highestSalesDay = weeklyData.reduce((max, d) => (d.amount > max.amount ? d : max), weeklyData[0] || { amount: 0, day: '', date: '' });
+        const lowestSalesDay = weeklyData.reduce((min, d) => (d.amount < min.amount ? d : min), weeklyData[0] || { amount: 0, day: '', date: '' });
+  
+        // returns
+        const totalReturns = returnsData.total;
+        const topReturnProduct = returnsData.byProduct.length > 0 ? returnsData.byProduct[0].product : null;
+  
+        // top selling product by revenue
+        const productRevenueMap = sales.reduce((acc, sale) => {
+          const name = sale.product?.productName || "Unknown";
+          acc[name] = (acc[name] || 0) + (sale.totalAmount || 0);
+          return acc;
+        }, {});
+        const sortedProducts = Object.entries(productRevenueMap).sort((a, b) => b[1] - a[1]);
+        const bestProduct = sortedProducts[0]?.[0] || "Unknown";
+        const bestProductShare = sortedProducts.length > 0 ? (sortedProducts[0][1] / (totalSales || 1)) * 100 : 0;
+  
+        // peak hour analysis (group by hour)
+        const hourBuckets = {};
+        sales.forEach(sale => {
+          const d = sale.saleDate ? new Date(sale.saleDate) : null;
+          if (!d) return;
+          const hour = d.getHours();
+          hourBuckets[hour] = (hourBuckets[hour] || 0) + (sale.totalAmount || 0);
+        });
+        const hourEntries = Object.entries(hourBuckets);
+        const peakHourEntry = hourEntries.length ? hourEntries.sort((a,b)=> b[1]-a[1])[0] : null;
+        const peakHourText = peakHourEntry ? `${peakHourEntry[0]}:00 - ${Number(peakHourEntry[0]) + 1}:00` : null;
+  
+        // produce insights
+        if (highestSalesDay && highestSalesDay.amount >= 0) {
+          insightsList.push(`📈 Highest sales: ${highestSalesDay.day} (${highestSalesDay.date}) — Rs.${highestSalesDay.amount.toLocaleString()}`);
+        }
+        if (lowestSalesDay && lowestSalesDay.amount >= 0) {
+          insightsList.push(`📉 Lowest sales: ${lowestSalesDay.day} (${lowestSalesDay.date}) — consider promotions to improve this day.`);
+        }
+  
+        insightsList.push(`🏆 Top product: ${bestProduct} (${bestProductShare.toFixed(1)}% of displayed revenue)`);
+  
+        if (totalReturns > 0 && topReturnProduct) {
+          insightsList.push(`⚠️ ${totalReturns} return(s) recorded recently — most returns: ${topReturnProduct}. Investigate quality/delivery.`);
+        } else {
+          insightsList.push(`✅ No major returns detected this period.`);
+        }
+  
+        if (paymentBreakdown.Pending > 0) {
+          insightsList.push(`⌛ ${paymentBreakdown.Pending} payment(s) pending — follow up to close sales.`);
+        }
+  
+        if (peakHourText) {
+          insightsList.push(`🕒 Peak sales hour: ${peakHourText}. Consider targeting promotions in this time window.`);
+        }
+  
+        setInsights(insightsList);
+        setAnalyzing(false);
+      }, 800);
+    };
 
   const styles = {
     container: {
@@ -435,6 +506,43 @@ const SalesDashboardPage = () => {
       animation: "spin 1s linear infinite",
       margin: "0 auto 20px auto",
     },
+    analyzeButton: {
+      backgroundColor: "#023E8A",
+      color: "#fff",
+      padding: "12px 25px",
+      border: "none",
+      borderRadius: "8px",
+      fontWeight: "600",
+      cursor: "pointer",
+      transition: "all 0.3s ease",
+      display: "block",
+      margin: "0 auto 30px auto",
+      textTransform: "uppercase",
+      letterSpacing: "0.5px",
+    },
+    analyzeButtonHover: {
+      backgroundColor: "#012a5c",
+      transform: "translateY(-2px)",
+      boxShadow: "0 4px 10px rgba(2,62,138,0.3)",
+    },
+    insightsBox: {
+      backgroundColor: "#f8f9fa",
+      border: "1px solid #dee2e6",
+      borderRadius: "10px",
+      padding: "20px 25px",
+      margin: "20px auto",
+      maxWidth: "900px",
+      boxShadow: "0 3px 10px rgba(0,0,0,0.08)",
+    },
+    insightItem: {
+      backgroundColor: "#ffffff",
+      padding: "12px 18px",
+      borderRadius: "6px",
+      border: "1px solid #e9ecef",
+      marginBottom: "10px",
+      fontSize: "1rem",
+      color: "#495057",
+    },
   };
 
   if (loading) {
@@ -462,6 +570,36 @@ const SalesDashboardPage = () => {
         <h1 style={styles.title}>Sales Dashboard</h1>
         <p style={styles.subtitle}>Comprehensive overview of your sales performance</p>
       </div>
+
+        {/* Analyze Sales button */}
+  <button
+    style={styles.analyzeButton}
+    onClick={analyzeSales}
+    onMouseEnter={(e) => {
+      e.target.style.backgroundColor = styles.analyzeButtonHover.backgroundColor;
+      e.target.style.transform = styles.analyzeButtonHover.transform;
+      e.target.style.boxShadow = styles.analyzeButtonHover.boxShadow;
+    }}
+    onMouseLeave={(e) => {
+      e.target.style.backgroundColor = styles.analyzeButton.backgroundColor;
+      e.target.style.transform = "none";
+      e.target.style.boxShadow = "none";
+    }}
+  >
+    {analyzing ? "Analyzing..." : "Analyze Sales"}
+  </button>
+
+    {/* AI Insights */}
+    {insights.length > 0 && (
+    <div style={styles.insightsBox}>
+      <h3 style={{ color: "#023E8A", marginBottom: "12px" }}>AI Sales Insights</h3>
+      {insights.map((insight, idx) => (
+        <div key={idx} style={styles.insightItem}>
+          {insight}
+        </div>
+      ))}
+    </div>
+  )}
 
       {/* Stats Cards */}
       <div style={styles.statsGrid}>
@@ -603,8 +741,8 @@ const SalesDashboardPage = () => {
             <div style={{...styles.statusLabel, color: '#dc3545'}}>Cancelled</div>
           </div>
           <div style={styles.statusCard}>
-            <div style={{...styles.statusNumber, color: '#6c757d'}}>{paymentBreakdown.Refunded}</div>
-            <div style={{...styles.statusLabel, color: '#6c757d'}}>Refunded</div>
+            <div style={{...styles.statusNumber, color: '#6c757d'}}>{paymentBreakdown.Returned}</div>
+            <div style={{...styles.statusLabel, color: '#6c757d'}}>Returned</div>
           </div>
         </div>
       </div>

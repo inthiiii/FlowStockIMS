@@ -83,16 +83,18 @@ const SalesListPage = () => {
     const doc = new jsPDF();
     doc.text("Sales Report", 14, 15);
 
-    const tableColumn = ["Customer", "Product", "Quantity", "Amount", "Status", "Date"];
+    const tableColumn = ["Customer", "Product", "Quantity", "Amount", "Status", "Importance", "Date"];
     const tableRows = [];
 
     filteredSales.forEach((sale) => {
+      const importance = getImportance(sale.totalAmount);
       const row = [
         sale.customerName,
         sale.product?.productName || "N/A",
         sale.quantity || 0,
         `Rs.${sale.totalAmount?.toFixed(2) || "0.00"}`,
         sale.paymentStatus,
+        importance.text,
         new Date(sale.saleDate).toLocaleDateString(),
       ];
       tableRows.push(row);
@@ -110,18 +112,30 @@ const SalesListPage = () => {
   // Export to Excel
   const exportToExcel = () => {
     const worksheet = XLSX.utils.json_to_sheet(
-      filteredSales.map((sale) => ({
-        Customer: sale.customerName,
-        Product: sale.product?.productName || "N/A",
-        Quantity: sale.quantity || 0,
-        Amount: sale.totalAmount?.toFixed(2) || "0.00",
-        Status: sale.paymentStatus,
-        Date: new Date(sale.saleDate).toLocaleDateString(),
-      }))
+      filteredSales.map((sale) => {
+        const importance = getImportance(sale.totalAmount);
+        return {
+          Customer: sale.customerName,
+          Product: sale.product?.productName || "N/A",
+          Quantity: sale.quantity || 0,
+          Amount: sale.totalAmount?.toFixed(2) || "0.00",
+          Status: sale.paymentStatus,
+          Importance: importance.text,
+          Date: new Date(sale.saleDate).toLocaleDateString(),
+        };
+      })
     );
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Sales Report");
     XLSX.writeFile(workbook, "sales_report.xlsx");
+  };
+
+  // Determine badge color and text based on totalAmount
+  const getImportance = (amount) => {
+    if (!amount) return { text: "Low Value", color: "#28a745" };
+    if (amount > 500) return { text: "🔴 High Value", color: "#dc3545" };
+    else if (amount > 100) return { text: "🟡 Medium Value", color: "#ffc107" };
+    else return { text: "🟢 Low Value", color: "#28a745" };
   };
 
   const getStatusColor = (status) => {
@@ -146,23 +160,9 @@ const SalesListPage = () => {
       minHeight: "100vh",
       fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
     },
-    header: {
-      textAlign: "center",
-      marginBottom: "40px",
-    },
-    title: {
-      color: "#023E8A",
-      fontSize: "2.5rem",
-      fontWeight: "600",
-      margin: "0",
-      marginBottom: "10px",
-    },
-    subtitle: {
-      color: "#6c757d",
-      fontSize: "1.1rem",
-      margin: "0",
-      fontWeight: "400",
-    },
+    header: { textAlign: "center", marginBottom: "40px" },
+    title: { color: "#023E8A", fontSize: "2.5rem", fontWeight: "600", margin: "0", marginBottom: "10px" },
+    subtitle: { color: "#6c757d", fontSize: "1.1rem", margin: "0", fontWeight: "400" },
     filtersContainer: {
       backgroundColor: "#f8f9fa",
       padding: "25px",
@@ -171,141 +171,24 @@ const SalesListPage = () => {
       border: "1px solid #e9ecef",
       boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
     },
-    filtersRow: {
-      display: "flex",
-      gap: "20px",
-      flexWrap: "wrap",
-      alignItems: "center",
-      marginBottom: "20px",
-    },
-    filterGroup: {
-      display: "flex",
-      flexDirection: "column",
-      gap: "5px",
-    },
-    filterLabel: {
-      fontSize: "0.85rem",
-      fontWeight: "600",
-      color: "#023E8A",
-      textTransform: "uppercase",
-      letterSpacing: "0.5px",
-    },
-    input: {
-      padding: "12px 16px",
-      border: "2px solid #e9ecef",
-      borderRadius: "8px",
-      fontSize: "1rem",
-      fontFamily: "inherit",
-      transition: "all 0.3s ease",
-      backgroundColor: "#ffffff",
-      outline: "none",
-      minWidth: "200px",
-    },
-    select: {
-      padding: "12px 16px",
-      border: "2px solid #e9ecef",
-      borderRadius: "8px",
-      fontSize: "1rem",
-      fontFamily: "inherit",
-      transition: "all 0.3s ease",
-      backgroundColor: "#ffffff",
-      outline: "none",
-      cursor: "pointer",
-      minWidth: "150px",
-    },
-    addButton: {
-      backgroundColor: "#023E8A",
-      color: "#ffffff",
-      padding: "12px 24px",
-      border: "none",
-      borderRadius: "8px",
-      fontSize: "1rem",
-      fontWeight: "600",
-      cursor: "pointer",
-      transition: "all 0.3s ease",
-      textDecoration: "none",
-      display: "inline-block",
-      textTransform: "uppercase",
-      letterSpacing: "0.5px",
-      marginBottom: "20px",
-    },
-    statsContainer: {
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      marginBottom: "20px",
-      padding: "15px 20px",
-      backgroundColor: "#f8f9fa",
-      borderRadius: "8px",
-      border: "1px solid #e9ecef",
-    },
-    statsText: {
-      color: "#495057",
-      fontSize: "0.95rem",
-      fontWeight: "500",
-    },
-    statsNumber: {
-      color: "#023E8A",
-      fontWeight: "600",
-    },
-    exportButtons: {
-      display: "flex",
-      gap: "10px",
-      marginBottom: "20px",
-    },
-    exportBtn: {
-      backgroundColor: "#023E8A",
-      color: "#fff",
-      padding: "10px 16px",
-      border: "none",
-      borderRadius: "6px",
-      cursor: "pointer",
-      fontWeight: "600",
-    },
-    tableContainer: {
-      backgroundColor: "#ffffff",
-      borderRadius: "12px",
-      boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-      overflow: "hidden",
-      border: "1px solid #e9ecef",
-    },
-    table: {
-      width: "100%",
-      borderCollapse: "collapse",
-      fontSize: "0.95rem",
-    },
-    th: {
-      padding: "18px 15px",
-      textAlign: "left",
-      fontWeight: "600",
-      textTransform: "uppercase",
-      letterSpacing: "0.5px",
-      fontSize: "0.85rem",
-      backgroundColor: "#023E8A",
-      color: "#ffffff",
-    },
-    td: {
-      padding: "15px",
-      verticalAlign: "middle",
-      color: "#495057",
-    },
-    statusBadge: {
-      padding: "6px 12px",
-      borderRadius: "20px",
-      fontSize: "0.8rem",
-      fontWeight: "600",
-      textTransform: "uppercase",
-      letterSpacing: "0.5px",
-      color: "#ffffff",
-      display: "inline-block",
-    },
-    noResults: {
-      textAlign: "center",
-      padding: "40px 20px",
-      color: "#6c757d",
-      fontSize: "1rem",
-      fontStyle: "italic",
-    },
+    filtersRow: { display: "flex", gap: "20px", flexWrap: "wrap", alignItems: "center", marginBottom: "20px" },
+    filterGroup: { display: "flex", flexDirection: "column", gap: "5px" },
+    filterLabel: { fontSize: "0.85rem", fontWeight: "600", color: "#023E8A", textTransform: "uppercase", letterSpacing: "0.5px" },
+    input: { padding: "12px 16px", border: "2px solid #e9ecef", borderRadius: "8px", fontSize: "1rem", fontFamily: "inherit", transition: "all 0.3s ease", backgroundColor: "#ffffff", outline: "none", minWidth: "200px" },
+    select: { padding: "12px 16px", border: "2px solid #e9ecef", borderRadius: "8px", fontSize: "1rem", fontFamily: "inherit", transition: "all 0.3s ease", backgroundColor: "#ffffff", outline: "none", cursor: "pointer", minWidth: "150px" },
+    addButton: { backgroundColor: "#023E8A", color: "#ffffff", padding: "12px 24px", border: "none", borderRadius: "8px", fontSize: "1rem", fontWeight: "600", cursor: "pointer", transition: "all 0.3s ease", textDecoration: "none", display: "inline-block", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "20px" },
+    statsContainer: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", padding: "15px 20px", backgroundColor: "#f8f9fa", borderRadius: "8px", border: "1px solid #e9ecef" },
+    statsText: { color: "#495057", fontSize: "0.95rem", fontWeight: "500" },
+    statsNumber: { color: "#023E8A", fontWeight: "600" },
+    exportButtons: { display: "flex", gap: "10px", marginBottom: "20px" },
+    exportBtn: { backgroundColor: "#023E8A", color: "#fff", padding: "10px 16px", border: "none", borderRadius: "6px", cursor: "pointer", fontWeight: "600" },
+    tableContainer: { backgroundColor: "#ffffff", borderRadius: "12px", boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)", overflow: "hidden", border: "1px solid #e9ecef" },
+    table: { width: "100%", borderCollapse: "collapse", fontSize: "0.95rem" },
+    th: { padding: "18px 15px", textAlign: "left", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.5px", fontSize: "0.85rem", backgroundColor: "#023E8A", color: "#ffffff" },
+    td: { padding: "15px", verticalAlign: "middle", color: "#495057" },
+    statusBadge: { padding: "6px 12px", borderRadius: "20px", fontSize: "0.8rem", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.5px", color: "#ffffff", display: "inline-block" },
+    importanceBadge: { padding: "6px 12px", borderRadius: "20px", fontSize: "0.8rem", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.5px", color: "#fff", display: "inline-block" },
+    noResults: { textAlign: "center", padding: "40px 20px", color: "#6c757d", fontSize: "1rem", fontStyle: "italic" },
   };
 
   if (loading) {
@@ -403,65 +286,79 @@ const SalesListPage = () => {
               <th style={styles.th}>Quantity</th>
               <th style={styles.th}>Amount</th>
               <th style={styles.th}>Status</th>
+              <th style={styles.th}>Importance</th>
               <th style={styles.th}>Date</th>
               <th style={styles.th}>Actions</th>
             </tr>
           </thead>
           <tbody>
             {filteredSales.length > 0 ? (
-              filteredSales.map((sale) => (
-                <tr key={sale._id}>
-                  <td style={styles.td}>{sale.customerName}</td>
-                  <td style={styles.td}>{sale.product?.productName || "N/A"}</td>
-                  <td style={styles.td}>{sale.quantity || 0}</td>
-                  <td style={styles.td}>Rs.{sale.totalAmount?.toFixed(2) || "0.00"}</td>
-                  <td style={styles.td}>
-                    <span
-                      style={{
-                        ...styles.statusBadge,
-                        backgroundColor: getStatusColor(sale.paymentStatus),
-                      }}
-                    >
-                      {sale.paymentStatus}
-                    </span>
-                  </td>
-                  <td style={styles.td}>
-                    {new Date(sale.saleDate).toLocaleDateString()}
-                  </td>
-                  <td style={styles.td}>
-                    <div style={{ display: "flex", gap: "8px" }}>
-                      <Link to={`/sales/${sale._id}`} style={{ ...styles.exportBtn, padding: "6px 12px" }}>
-                        View
-                      </Link>
-                      <button
-                        onClick={() => deleteSale(sale._id)}
+              filteredSales.map((sale) => {
+                const importance = getImportance(sale.totalAmount);
+                return (
+                  <tr key={sale._id}>
+                    <td style={styles.td}>{sale.customerName}</td>
+                    <td style={styles.td}>{sale.product?.productName || "N/A"}</td>
+                    <td style={styles.td}>{sale.quantity || 0}</td>
+                    <td style={styles.td}>Rs.{sale.totalAmount?.toFixed(2) || "0.00"}</td>
+                    <td style={styles.td}>
+                      <span
                         style={{
-                          ...styles.exportBtn,
-                          backgroundColor: "#dc3545",
-                          padding: "6px 12px",
+                          ...styles.statusBadge,
+                          backgroundColor: getStatusColor(sale.paymentStatus),
                         }}
                       >
-                        Delete
-                      </button>
-                      {sale.paymentStatus !== "Returned" && (
+                        {sale.paymentStatus}
+                      </span>
+                    </td>
+                    <td style={styles.td}>
+                      <span
+                        style={{
+                          ...styles.importanceBadge,
+                          backgroundColor: importance.color,
+                        }}
+                      >
+                        {importance.text}
+                      </span>
+                    </td>
+                    <td style={styles.td}>
+                      {new Date(sale.saleDate).toLocaleDateString()}
+                    </td>
+                    <td style={styles.td}>
+                      <div style={{ display: "flex", gap: "8px" }}>
+                        <Link to={`/sales/${sale._id}`} style={{ ...styles.exportBtn, padding: "6px 12px" }}>
+                          View
+                        </Link>
                         <button
-                          onClick={() => returnSale(sale._id)}
+                          onClick={() => deleteSale(sale._id)}
                           style={{
                             ...styles.exportBtn,
-                            backgroundColor: "#fd7e14",
+                            backgroundColor: "#dc3545",
                             padding: "6px 12px",
                           }}
                         >
-                          Return
+                          Delete
                         </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))
+                        {sale.paymentStatus !== "Returned" && (
+                          <button
+                            onClick={() => returnSale(sale._id)}
+                            style={{
+                              ...styles.exportBtn,
+                              backgroundColor: "#fd7e14",
+                              padding: "6px 12px",
+                            }}
+                          >
+                            Return
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
             ) : (
               <tr>
-                <td colSpan="7" style={styles.noResults}>
+                <td colSpan="8" style={styles.noResults}>
                   {searchTerm || statusFilter || dateFilter
                     ? "No sales found matching your filters."
                     : "No sales available."}
