@@ -7,6 +7,8 @@ const ContactUsReceivePage = () => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [analysis, setAnalysis] = useState([]);
+  const [analyzing, setAnalyzing] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -21,6 +23,25 @@ const ContactUsReceivePage = () => {
       })
       .finally(() => setLoading(false));
   }, []);
+
+  const handleAnalyze = async () => {
+    if (messages.length === 0) {
+      alert("No messages to analyze!");
+      return;
+    }
+  
+    setAnalyzing(true);
+    try {
+      const result = await contactService.analyzeMessages(messages);
+      setAnalysis(result.analyzed);
+      alert("Messages analyzed successfully!");
+    } catch (err) {
+      console.error("Analysis error:", err);
+      alert("Failed to analyze messages");
+    } finally {
+      setAnalyzing(false);
+    }
+  };
 
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this message?")) {
@@ -45,6 +66,41 @@ const ContactUsReceivePage = () => {
         console.error("Reply error:", err);
       }
     }
+  };
+
+  const handleAnalyzeMessages = () => {
+    const analyzedMessages = messages.map((msg) => {
+      const text = msg.message.toLowerCase();
+  
+      let importance = "Normal";
+  
+      if (
+        text.includes("urgent") ||
+        text.includes("immediately") ||
+        text.includes("asap") ||
+        text.includes("help") ||
+        text.includes("important")
+      ) {
+        importance = "High";
+      } else if (
+        text.includes("thank you") ||
+        text.includes("appreciate") ||
+        text.includes("feedback") ||
+        text.includes("good") ||
+        text.includes("nice")
+      ) {
+        importance = "Low";
+      }
+  
+      const words = msg.message.split(" ");
+      const summary =
+        words.length > 15 ? words.slice(0, 15).join(" ") + "..." : msg.message;
+  
+      return { ...msg, importance, summary };
+    });
+  
+    console.log("Analyzed messages:", analyzedMessages); // ✅ For debugging
+    setMessages(analyzedMessages);
   };
 
   const getFilteredMessages = () => {
@@ -361,6 +417,20 @@ const ContactUsReceivePage = () => {
               e.target.style.boxShadow = "none";
             }}
           />
+          <button
+  onClick={handleAnalyzeMessages}
+  style={{ ...styles.button, ...styles.replyButton }}
+  onMouseEnter={(e) => {
+    e.target.style.backgroundColor = styles.replyButtonHover.backgroundColor;
+    e.target.style.transform = styles.replyButtonHover.transform;
+  }}
+  onMouseLeave={(e) => {
+    e.target.style.backgroundColor = styles.replyButton.backgroundColor;
+    e.target.style.transform = "none";
+  }}
+>
+  Analyze Messages
+</button>
         </div>
       </div>
 
@@ -425,6 +495,45 @@ const ContactUsReceivePage = () => {
                 {msg.createdAt ? new Date(msg.createdAt).toLocaleDateString() : 'Recent'}
               </div>
             </div>
+
+            {/* Importance Badge */}
+{msg.importance && (
+  <div
+    style={{
+      display: "inline-block",
+      backgroundColor:
+        msg.importance === "High"
+          ? "#dc3545"
+          : msg.importance === "Low"
+          ? "#198754"
+          : "#ffc107",
+      color: "white",
+      padding: "6px 12px",
+      borderRadius: "8px",
+      fontSize: "0.9rem",
+      fontWeight: "600",
+      marginBottom: "12px",
+    }}
+  >
+    {msg.importance} Importance
+  </div>
+)}
+
+{/* Message Summary */}
+{msg.summary && (
+  <div
+    style={{
+      backgroundColor: "#f1f3f5",
+      padding: "10px",
+      borderRadius: "8px",
+      marginBottom: "15px",
+      fontStyle: "italic",
+      color: "#495057",
+    }}
+  >
+    “{msg.summary}”
+  </div>
+)}
 
             <div style={styles.messageContent}>
               <div style={styles.messageLabel}>Message:</div>

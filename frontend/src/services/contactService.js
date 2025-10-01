@@ -44,4 +44,10 @@ const replyMessage = async (id, reply) => {
   }
 };
 
-export default { sendMessage, getMessages, deleteMessage, replyMessage };
+// function to analyze messages
+const analyzeMessages = async (messages) => {
+  const response = await axios.post(`${API_URL}/analyze`, { messages });
+  return response.data;
+};
+
+export default { sendMessage, getMessages, deleteMessage, replyMessage, analyzeMessages, };

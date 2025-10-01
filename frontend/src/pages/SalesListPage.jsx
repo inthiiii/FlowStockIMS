@@ -378,7 +378,7 @@ const SalesListPage = () => {
           Filtered Results: <span style={styles.statsNumber}>{filteredSales.length}</span>
         </span>
         <span style={styles.statsText}>
-          ✅ Total Revenue (excluding returns):{" "}
+          ✅ Total Revenue:{" "}
           <span style={styles.statsNumber}>Rs.{totalRevenue}</span>
         </span>
       </div>

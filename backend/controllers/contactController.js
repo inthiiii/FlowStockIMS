@@ -71,3 +71,52 @@ export const replyMessage = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+// Analyze and rank contact messages
+export const analyzeMessages = async (req, res) => {
+  try {
+    const { messages } = req.body;
+
+    if (!messages || messages.length === 0) {
+      return res.status(400).json({ message: "No messages provided for analysis" });
+    }
+
+    // Simple rule-based analysis for now (can be replaced with AI later)
+    const analyzed = messages.map((msg) => {
+      const text = msg.message.toLowerCase();
+      let importance = "Normal";
+      let keywords = [];
+
+      // Detect urgency or complaint words
+      if (text.includes("urgent") || text.includes("immediate") || text.includes("asap")) {
+        importance = "High";
+        keywords.push("Urgent");
+      }
+      if (text.includes("complaint") || text.includes("problem") || text.includes("issue")) {
+        importance = "High";
+        keywords.push("Complaint");
+      }
+      if (text.includes("thank") || text.includes("good") || text.includes("appreciate")) {
+        importance = "Low";
+        keywords.push("Positive");
+      }
+
+      // Basic summary (first 20 words)
+      const summary = msg.message.split(" ").slice(0, 20).join(" ") + (msg.message.split(" ").length > 20 ? "..." : "");
+
+      return {
+        id: msg._id,
+        name: msg.name,
+        email: msg.email,
+        importance,
+        summary,
+        keywords,
+      };
+    });
+
+    res.status(200).json({ analyzed });
+  } catch (error) {
+    console.error("Error analyzing messages:", error);
+    res.status(500).json({ message: "Error analyzing messages", error: error.message });
+  }
+};

@@ -56,7 +56,9 @@ const SalesDashboardPage = () => {
 
   // Get returns data
   const getReturnsData = () => {
-    const returns = sales.filter(s => s.status === 'returned' || s.paymentStatus === 'Refunded');
+    const returns = sales.filter(
+      (s) => s.paymentStatus === "Returned" || s.paymentStatus === "Cancelled"
+    );
     const returnsByProduct = {};
 
     returns.forEach(sale => {
