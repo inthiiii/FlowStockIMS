@@ -8,7 +8,7 @@ const Header = () => {
         <nav style={navStyle}>
           <div style={logoSection}>
             
-            <h2 style={logoText}>Nation Motor Spares</h2>
+            <h2 style={logoText}>Nation Motors</h2>
           </div>
           <div style={navLinks}>
             <Link to="/" style={linkStyle}>Home</Link>
@@ -33,7 +33,7 @@ const headerStyle = {
 };
 
 const headerContainer = {
-  maxWidth: "1200px",
+  Width: "1200px",
   margin: "0 auto",
   padding: "0 20px"
 };

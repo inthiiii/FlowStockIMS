@@ -27,6 +27,13 @@ const AddSalePage = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    
+    // Prevent entering quantity greater than available stock
+    if (name === "quantity" && selectedProduct && Number(value) > selectedProduct.quantity) {
+      alert(`⚠️ Quantity cannot exceed available stock (${selectedProduct.quantity})`);
+      return;
+    }
+
     setForm({ ...form, [name]: value });
 
     // If product is selected, find the product details
@@ -40,6 +47,13 @@ const AddSalePage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Check if quantity exceeds available stock before submitting
+    if (selectedProduct && form.quantity > selectedProduct.quantity) {
+      alert(`⚠️ Quantity exceeds available stock (${selectedProduct.quantity}). Please enter a valid amount.`);
+      return;
+    }
+
     try {
       const response = await fetch("http://localhost:3000/api/sales", {
         method: "POST",
@@ -48,15 +62,15 @@ const AddSalePage = () => {
       });
       
       if (response.ok) {
-        alert("Sale Added Successfully!");
+        alert("✅ Sale Added Successfully!");
         setForm({ product: "", customerName: "", customerEmail: "", quantity: 1, pricePerUnit: 0 });
         setSelectedProduct(null);
       } else {
-        alert("Error adding sale. Please try again.");
+        alert("❌ Error adding sale. Please try again.");
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("Error adding sale. Please try again.");
+      alert("❌ Error adding sale. Please try again.");
     }
   };
 
@@ -166,11 +180,10 @@ const AddSalePage = () => {
       boxShadow: "0 4px 12px rgba(2, 62, 138, 0.3)",
     },
     productInfo: {
-      backgroundColor: "#ffffff",
+      backgroundColor: "#d1ecf1",
       padding: "15px",
       borderRadius: "8px",
       border: "1px solid #d1ecf1",
-      backgroundColor: "#d1ecf1",
       marginTop: "10px",
     },
     productInfoTitle: {
@@ -253,6 +266,7 @@ const AddSalePage = () => {
 
       <div style={styles.formContainer}>
         <form onSubmit={handleSubmit} style={styles.form}>
+          {/* Product Selection */}
           <div style={styles.formGroup}>
             <label style={styles.label}>Product</label>
             <select 
@@ -261,14 +275,6 @@ const AddSalePage = () => {
               onChange={handleChange} 
               required
               style={styles.select}
-              onFocus={(e) => {
-                e.target.style.borderColor = styles.inputFocus.borderColor;
-                e.target.style.boxShadow = styles.inputFocus.boxShadow;
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = styles.input.borderColor;
-                e.target.style.boxShadow = "none";
-              }}
             >
               <option value="">Select a Product</option>
               {products.map((p) => (
@@ -277,7 +283,7 @@ const AddSalePage = () => {
                 </option>
               ))}
             </select>
-            
+
             {selectedProduct && (
               <div style={styles.productInfo}>
                 <div style={styles.productInfoTitle}>Selected Product Details:</div>
@@ -299,6 +305,7 @@ const AddSalePage = () => {
             )}
           </div>
 
+          {/* Customer Info */}
           <div style={styles.formRow}>
             <div style={styles.formGroup}>
               <label style={styles.label}>Customer Name</label>
@@ -310,14 +317,6 @@ const AddSalePage = () => {
                 required
                 style={styles.input}
                 placeholder="Enter customer name"
-                onFocus={(e) => {
-                  e.target.style.borderColor = styles.inputFocus.borderColor;
-                  e.target.style.boxShadow = styles.inputFocus.boxShadow;
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = styles.input.borderColor;
-                  e.target.style.boxShadow = "none";
-                }}
               />
             </div>
 
@@ -330,18 +329,11 @@ const AddSalePage = () => {
                 onChange={handleChange}
                 style={styles.input}
                 placeholder="customer@email.com"
-                onFocus={(e) => {
-                  e.target.style.borderColor = styles.inputFocus.borderColor;
-                  e.target.style.boxShadow = styles.inputFocus.boxShadow;
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = styles.input.borderColor;
-                  e.target.style.boxShadow = "none";
-                }}
               />
             </div>
           </div>
 
+          {/* Quantity & Price */}
           <div style={styles.formRow}>
             <div style={styles.formGroup}>
               <label style={styles.label}>Quantity</label>
@@ -354,14 +346,6 @@ const AddSalePage = () => {
                 min="1"
                 max={selectedProduct ? selectedProduct.quantity : undefined}
                 style={styles.input}
-                onFocus={(e) => {
-                  e.target.style.borderColor = styles.inputFocus.borderColor;
-                  e.target.style.boxShadow = styles.inputFocus.boxShadow;
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = styles.input.borderColor;
-                  e.target.style.boxShadow = "none";
-                }}
               />
             </div>
 
@@ -377,18 +361,11 @@ const AddSalePage = () => {
                 step="0.01"
                 style={styles.input}
                 placeholder="0.00"
-                onFocus={(e) => {
-                  e.target.style.borderColor = styles.inputFocus.borderColor;
-                  e.target.style.boxShadow = styles.inputFocus.boxShadow;
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = styles.input.borderColor;
-                  e.target.style.boxShadow = "none";
-                }}
               />
             </div>
           </div>
 
+          {/* Total Amount */}
           {form.quantity > 0 && form.pricePerUnit > 0 && (
             <div style={styles.totalContainer}>
               <div style={styles.totalLabel}>Total Amount</div>
@@ -396,6 +373,7 @@ const AddSalePage = () => {
             </div>
           )}
 
+          {/* Submit Button */}
           <button 
             type="submit" 
             style={styles.button}

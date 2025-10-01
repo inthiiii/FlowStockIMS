@@ -10,7 +10,7 @@ const Footer = () => {
           {/* Company intro */}
           <div style={footerSection}>
             <div style={footerLogoSection}>
-              <h4 style={footerTitle}>Nation Motor Spares</h4>
+              <h4 style={footerTitle}>Nation Motors</h4>
             </div>
             <p style={footerDescription}>
               Leading suppliers of motorcycle spare parts with trusted service and quality nationwide.
@@ -48,7 +48,7 @@ const Footer = () => {
               </div>
               <div style={contactItem}>
                 <span style={contactIcon}>📧</span>
-                <span>nationmotors@gmail.com</span>
+                <span>nationmotorscolombo@gmail.com</span>
               </div>
             </div>
           </div>
@@ -98,8 +98,8 @@ const footerStyle = {
 };
 
 const footerContainer = {
-  maxWidth: "1200px",
-  margin: "0 auto"
+  width: "100%",
+  margin: 0
 };
 
 const footerContent = {

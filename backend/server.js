@@ -8,6 +8,8 @@ import connectDB from "./db.js";
 import router from "./routes/salesRoutes.js";
 import productRouter from "./routes/productRoutes.js";
 import contactRoutes from "./routes/contactRoutes.js";
+import shipmentRoutes from "./routes/shipmentRoutes.js";
+import emailRoutes from "./routes/emailRoutes.js";
 
 dotenv.config();
 
@@ -28,8 +30,10 @@ app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
 
 // Routes
 app.use("/api/sales", router);
+app.use("/api/email", emailRoutes); // Email routes
 app.use("/api/products", productRouter);
 app.use("/api/contact", contactRoutes);
+app.use("/api/shipments", shipmentRoutes);
 
 // Root endpoint
 app.get("/", (req, res) => {

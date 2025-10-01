@@ -1,6 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
+// imports for excel and pdf export
+import jsPDF from "jspdf";
+import "jspdf-autotable";
+import * as XLSX from "xlsx";
+
 const SalesListPage = () => {
   const [sales, setSales] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -67,12 +72,68 @@ const SalesListPage = () => {
     return true;
   });
 
+  // ✅ Total revenue (excluding returned sales)
+  const totalRevenue = filteredSales
+    .filter((sale) => sale.paymentStatus !== "Returned") // exclude returned sales
+    .reduce((sum, sale) => sum + (sale.totalAmount || 0), 0)
+    .toFixed(2);
+
+  // Export to PDF
+  const exportToPDF = () => {
+    const doc = new jsPDF();
+    doc.text("Sales Report", 14, 15);
+
+    const tableColumn = ["Customer", "Product", "Quantity", "Amount", "Status", "Date"];
+    const tableRows = [];
+
+    filteredSales.forEach((sale) => {
+      const row = [
+        sale.customerName,
+        sale.product?.productName || "N/A",
+        sale.quantity || 0,
+        `Rs.${sale.totalAmount?.toFixed(2) || "0.00"}`,
+        sale.paymentStatus,
+        new Date(sale.saleDate).toLocaleDateString(),
+      ];
+      tableRows.push(row);
+    });
+
+    doc.autoTable({
+      head: [tableColumn],
+      body: tableRows,
+      startY: 20,
+    });
+
+    doc.save("sales_report.pdf");
+  };
+
+  // Export to Excel
+  const exportToExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(
+      filteredSales.map((sale) => ({
+        Customer: sale.customerName,
+        Product: sale.product?.productName || "N/A",
+        Quantity: sale.quantity || 0,
+        Amount: sale.totalAmount?.toFixed(2) || "0.00",
+        Status: sale.paymentStatus,
+        Date: new Date(sale.saleDate).toLocaleDateString(),
+      }))
+    );
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Sales Report");
+    XLSX.writeFile(workbook, "sales_report.xlsx");
+  };
+
   const getStatusColor = (status) => {
     switch (status) {
-      case "Paid": return "#28a745";
-      case "Pending": return "#ffc107";
-      case "Cancelled": return "#dc3545";
-      default: return "#6c757d";
+      case "Paid":
+        return "#28a745";
+      case "Pending":
+        return "#ffc107";
+      case "Returned":
+        return "#dc3545";
+      default:
+        return "#6c757d";
     }
   };
 
@@ -152,10 +213,6 @@ const SalesListPage = () => {
       cursor: "pointer",
       minWidth: "150px",
     },
-    inputFocus: {
-      borderColor: "#023E8A",
-      boxShadow: "0 0 0 3px rgba(2, 62, 138, 0.1)",
-    },
     addButton: {
       backgroundColor: "#023E8A",
       color: "#ffffff",
@@ -171,11 +228,6 @@ const SalesListPage = () => {
       textTransform: "uppercase",
       letterSpacing: "0.5px",
       marginBottom: "20px",
-    },
-    addButtonHover: {
-      backgroundColor: "#012a5c",
-      transform: "translateY(-2px)",
-      boxShadow: "0 4px 12px rgba(2, 62, 138, 0.3)",
     },
     statsContainer: {
       display: "flex",
@@ -196,6 +248,20 @@ const SalesListPage = () => {
       color: "#023E8A",
       fontWeight: "600",
     },
+    exportButtons: {
+      display: "flex",
+      gap: "10px",
+      marginBottom: "20px",
+    },
+    exportBtn: {
+      backgroundColor: "#023E8A",
+      color: "#fff",
+      padding: "10px 16px",
+      border: "none",
+      borderRadius: "6px",
+      cursor: "pointer",
+      fontWeight: "600",
+    },
     tableContainer: {
       backgroundColor: "#ffffff",
       borderRadius: "12px",
@@ -208,10 +274,6 @@ const SalesListPage = () => {
       borderCollapse: "collapse",
       fontSize: "0.95rem",
     },
-    tableHeader: {
-      backgroundColor: "#023E8A",
-      color: "#ffffff",
-    },
     th: {
       padding: "18px 15px",
       textAlign: "left",
@@ -219,34 +281,13 @@ const SalesListPage = () => {
       textTransform: "uppercase",
       letterSpacing: "0.5px",
       fontSize: "0.85rem",
-      borderBottom: "none",
-    },
-    tbody: {
-      backgroundColor: "#ffffff",
-    },
-    tr: {
-      borderBottom: "1px solid #e9ecef",
-      transition: "all 0.2s ease",
-    },
-    trHover: {
-      backgroundColor: "#f8f9fa",
+      backgroundColor: "#023E8A",
+      color: "#ffffff",
     },
     td: {
       padding: "15px",
       verticalAlign: "middle",
       color: "#495057",
-    },
-    customerName: {
-      fontWeight: "500",
-      color: "#023E8A",
-    },
-    productName: {
-      fontWeight: "500",
-    },
-    amount: {
-      fontWeight: "600",
-      fontSize: "1rem",
-      fontFamily: "monospace",
     },
     statusBadge: {
       padding: "6px 12px",
@@ -258,55 +299,6 @@ const SalesListPage = () => {
       color: "#ffffff",
       display: "inline-block",
     },
-    date: {
-      fontFamily: "monospace",
-      fontSize: "0.9rem",
-    },
-    actionsContainer: {
-      display: "flex",
-      gap: "8px",
-      alignItems: "center",
-    },
-    viewLink: {
-      color: "#023E8A",
-      textDecoration: "none",
-      fontWeight: "500",
-      padding: "6px 12px",
-      borderRadius: "4px",
-      border: "1px solid #023E8A",
-      fontSize: "0.85rem",
-      transition: "all 0.2s ease",
-    },
-    viewLinkHover: {
-      backgroundColor: "#023E8A",
-      color: "#ffffff",
-    },
-    actionButton: {
-      padding: "6px 12px",
-      border: "none",
-      borderRadius: "4px",
-      fontSize: "0.85rem",
-      fontWeight: "500",
-      cursor: "pointer",
-      transition: "all 0.2s ease",
-      color: "#ffffff",
-      textTransform: "uppercase",
-      letterSpacing: "0.3px",
-    },
-    deleteButton: {
-      backgroundColor: "#dc3545",
-    },
-    deleteButtonHover: {
-      backgroundColor: "#c82333",
-      transform: "translateY(-1px)",
-    },
-    returnButton: {
-      backgroundColor: "#fd7e14",
-    },
-    returnButtonHover: {
-      backgroundColor: "#e96b00",
-      transform: "translateY(-1px)",
-    },
     noResults: {
       textAlign: "center",
       padding: "40px 20px",
@@ -314,37 +306,13 @@ const SalesListPage = () => {
       fontSize: "1rem",
       fontStyle: "italic",
     },
-    loadingContainer: {
-      textAlign: "center",
-      padding: "60px 20px",
-      color: "#6c757d",
-      fontSize: "1.1rem",
-    },
   };
 
   if (loading) {
     return (
       <div style={styles.container}>
-        <div style={styles.loadingContainer}>
-          <div style={{
-            display: "inline-block",
-            width: "40px",
-            height: "40px",
-            border: "4px solid #e9ecef",
-            borderTop: "4px solid #023E8A",
-            borderRadius: "50%",
-            animation: "spin 1s linear infinite",
-            marginBottom: "20px"
-          }}></div>
+        <div style={{ textAlign: "center", padding: "60px 20px" }}>
           <p>Loading sales...</p>
-          <style>
-            {`
-              @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-              }
-            `}
-          </style>
         </div>
       </div>
     );
@@ -368,36 +336,20 @@ const SalesListPage = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               style={styles.input}
-              onFocus={(e) => {
-                e.target.style.borderColor = styles.inputFocus.borderColor;
-                e.target.style.boxShadow = styles.inputFocus.boxShadow;
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = styles.input.borderColor;
-                e.target.style.boxShadow = "none";
-              }}
             />
           </div>
 
           <div style={styles.filterGroup}>
             <label style={styles.filterLabel}>Status</label>
-            <select 
-              value={statusFilter} 
-              onChange={(e) => setStatusFilter(e.target.value)} 
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
               style={styles.select}
-              onFocus={(e) => {
-                e.target.style.borderColor = styles.inputFocus.borderColor;
-                e.target.style.boxShadow = styles.inputFocus.boxShadow;
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = styles.select.borderColor;
-                e.target.style.boxShadow = "none";
-              }}
             >
               <option value="">All Status</option>
               <option value="Pending">Pending</option>
               <option value="Paid">Paid</option>
-              <option value="Cancelled">Cancelled</option>
+              <option value="Returned">Returned</option>
             </select>
           </div>
 
@@ -408,33 +360,12 @@ const SalesListPage = () => {
               value={dateFilter}
               onChange={(e) => setDateFilter(e.target.value)}
               style={styles.input}
-              onFocus={(e) => {
-                e.target.style.borderColor = styles.inputFocus.borderColor;
-                e.target.style.boxShadow = styles.inputFocus.boxShadow;
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = styles.input.borderColor;
-                e.target.style.boxShadow = "none";
-              }}
             />
           </div>
         </div>
 
         <Link to="/sales/add" style={styles.addButton}>
-          <span
-            onMouseEnter={(e) => {
-              e.target.parentElement.style.backgroundColor = styles.addButtonHover.backgroundColor;
-              e.target.parentElement.style.transform = styles.addButtonHover.transform;
-              e.target.parentElement.style.boxShadow = styles.addButtonHover.boxShadow;
-            }}
-            onMouseLeave={(e) => {
-              e.target.parentElement.style.backgroundColor = styles.addButton.backgroundColor;
-              e.target.parentElement.style.transform = "none";
-              e.target.parentElement.style.boxShadow = "none";
-            }}
-          >
-            + Add New Sale
-          </span>
+          + Add New Sale
         </Link>
       </div>
 
@@ -447,113 +378,92 @@ const SalesListPage = () => {
           Filtered Results: <span style={styles.statsNumber}>{filteredSales.length}</span>
         </span>
         <span style={styles.statsText}>
-          Total Revenue: <span style={styles.statsNumber}>
-            Rs.{filteredSales.reduce((sum, sale) => sum + (sale.totalAmount || 0), 0).toFixed(2)}
-          </span>
+          ✅ Total Revenue (excluding returns):{" "}
+          <span style={styles.statsNumber}>Rs.{totalRevenue}</span>
         </span>
+      </div>
+
+      {/* Export Buttons */}
+      <div style={styles.exportButtons}>
+        <button onClick={exportToPDF} style={styles.exportBtn}>
+          📄 Export PDF
+        </button>
+        <button onClick={exportToExcel} style={styles.exportBtn}>
+          📊 Export Excel
+        </button>
       </div>
 
       {/* Table */}
       <div style={styles.tableContainer}>
         <table style={styles.table}>
-          <thead style={styles.tableHeader}>
+          <thead>
             <tr>
               <th style={styles.th}>Customer</th>
               <th style={styles.th}>Product</th>
+              <th style={styles.th}>Quantity</th>
               <th style={styles.th}>Amount</th>
               <th style={styles.th}>Status</th>
               <th style={styles.th}>Date</th>
               <th style={styles.th}>Actions</th>
             </tr>
           </thead>
-          <tbody style={styles.tbody}>
+          <tbody>
             {filteredSales.length > 0 ? (
               filteredSales.map((sale) => (
-                <tr
-                  key={sale._id}
-                  style={styles.tr}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = styles.trHover.backgroundColor;
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "transparent";
-                  }}
-                >
-                  <td style={{...styles.td, ...styles.customerName}}>
-                    {sale.customerName}
-                  </td>
-                  <td style={{...styles.td, ...styles.productName}}>
-                    {sale.product?.productName || 'N/A'}
-                  </td>
-                  <td style={{...styles.td, ...styles.amount}}>
-                    Rs.{sale.totalAmount?.toFixed(2) || '0.00'}
-                  </td>
+                <tr key={sale._id}>
+                  <td style={styles.td}>{sale.customerName}</td>
+                  <td style={styles.td}>{sale.product?.productName || "N/A"}</td>
+                  <td style={styles.td}>{sale.quantity || 0}</td>
+                  <td style={styles.td}>Rs.{sale.totalAmount?.toFixed(2) || "0.00"}</td>
                   <td style={styles.td}>
-                    <span 
+                    <span
                       style={{
                         ...styles.statusBadge,
-                        backgroundColor: getStatusColor(sale.paymentStatus)
+                        backgroundColor: getStatusColor(sale.paymentStatus),
                       }}
                     >
                       {sale.paymentStatus}
                     </span>
                   </td>
-                  <td style={{...styles.td, ...styles.date}}>
+                  <td style={styles.td}>
                     {new Date(sale.saleDate).toLocaleDateString()}
                   </td>
                   <td style={styles.td}>
-                    <div style={styles.actionsContainer}>
-                      <Link 
-                        to={`/sales/${sale._id}`} 
-                        style={styles.viewLink}
-                        onMouseEnter={(e) => {
-                          e.target.style.backgroundColor = styles.viewLinkHover.backgroundColor;
-                          e.target.style.color = styles.viewLinkHover.color;
-                        }}
-                        onMouseLeave={(e) => {
-                          e.target.style.backgroundColor = "transparent";
-                          e.target.style.color = styles.viewLink.color;
-                        }}
-                      >
+                    <div style={{ display: "flex", gap: "8px" }}>
+                      <Link to={`/sales/${sale._id}`} style={{ ...styles.exportBtn, padding: "6px 12px" }}>
                         View
                       </Link>
                       <button
                         onClick={() => deleteSale(sale._id)}
-                        style={{...styles.actionButton, ...styles.deleteButton}}
-                        onMouseEnter={(e) => {
-                          e.target.style.backgroundColor = styles.deleteButtonHover.backgroundColor;
-                          e.target.style.transform = styles.deleteButtonHover.transform;
-                        }}
-                        onMouseLeave={(e) => {
-                          e.target.style.backgroundColor = styles.deleteButton.backgroundColor;
-                          e.target.style.transform = "none";
+                        style={{
+                          ...styles.exportBtn,
+                          backgroundColor: "#dc3545",
+                          padding: "6px 12px",
                         }}
                       >
                         Delete
                       </button>
-                      <button
-                        onClick={() => returnSale(sale._id)}
-                        style={{...styles.actionButton, ...styles.returnButton}}
-                        onMouseEnter={(e) => {
-                          e.target.style.backgroundColor = styles.returnButtonHover.backgroundColor;
-                          e.target.style.transform = styles.returnButtonHover.transform;
-                        }}
-                        onMouseLeave={(e) => {
-                          e.target.style.backgroundColor = styles.returnButton.backgroundColor;
-                          e.target.style.transform = "none";
-                        }}
-                      >
-                        Return
-                      </button>
+                      {sale.paymentStatus !== "Returned" && (
+                        <button
+                          onClick={() => returnSale(sale._id)}
+                          style={{
+                            ...styles.exportBtn,
+                            backgroundColor: "#fd7e14",
+                            padding: "6px 12px",
+                          }}
+                        >
+                          Return
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="6" style={styles.noResults}>
-                  {searchTerm || statusFilter || dateFilter 
-                    ? "No sales found matching your filters." 
+                <td colSpan="7" style={styles.noResults}>
+                  {searchTerm || statusFilter || dateFilter
+                    ? "No sales found matching your filters."
                     : "No sales available."}
                 </td>
               </tr>

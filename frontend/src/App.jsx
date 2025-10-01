@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import NavigationBar from "./components/NavigationBar";
 
 import HomePage from "./pages/HomePage";  
 import AboutPage from "./pages/AboutPage";
@@ -16,11 +17,17 @@ import SalesListPage from "./pages/SalesListPage";
 import AddSalePage from "./pages/AddSalePage";
 import SaleDetailsPage from "./pages/SaleDetailsPage";
 import ReceiptPage from "./pages/ReceiptPage";
+import EditSalePage from "./pages/EditSalePage";
 
 // Product Pages
 import ProductAdd from "./pages/ProductAdd";
 import ProductControl from "./pages/ProductControl";
 import EditProduct from "./pages/EditProduct";
+
+// Shipment Pages
+import CreateShipment from "./pages/CreateShipment";
+import ShipmentControl from "./pages/ShipmentControl";
+import ShipmentUpdate from "./pages/ShipmentUpdate";
 
 const App = () => {
   return (
@@ -43,11 +50,17 @@ const App = () => {
             <Route path="/sales/add" element={<AddSalePage />} />
             <Route path="/sales/:id" element={<SaleDetailsPage />} />
             <Route path="/sales/:id/receipt" element={<ReceiptPage />} />
+            <Route path="/sales/edit/:id" element={<EditSalePage />} />
 
             {/* Product Routes */}
             <Route path="/products/entry" element={<ProductAdd />} />
             <Route path="/products/control" element={<ProductControl />} />
             <Route path="/product/:id" element={<EditProduct />} />
+
+            {/* Shipment Routes */}
+            <Route path="/shipments/create" element={<CreateShipment />} />
+            <Route path="/shipments/control" element={<ShipmentControl />} />
+            <Route path="/shipments/update/:id" element={<ShipmentUpdate />} />
 
           </Routes>
         </main>
