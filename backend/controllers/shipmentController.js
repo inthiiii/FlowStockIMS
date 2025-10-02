@@ -21,10 +21,14 @@ export const createShipment = async (req, res) => {
     const shipment = new Shipment({ shipmentId, carrier, products });
     await shipment.save();
 
-    // Optionally: decrement product quantities here if shipment represents stock out.
-    // for (const p of products) {
-    //   await Product.findByIdAndUpdate(p.product, { $inc: { quantity: -Math.abs(p.quantity) } });
-    // }
+   // ✅ Increase product quantities when new shipment arrives (stock in)
+for (const p of products) {
+  await Product.findByIdAndUpdate(
+    p.product,
+    { $inc: { quantity: Math.abs(p.quantity) } },
+    { new: true }
+  );
+}
 
     const result = await Shipment.findById(shipment._id).populate("products.product");
     res.status(201).json(result);

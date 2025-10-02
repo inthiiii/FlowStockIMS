@@ -488,7 +488,6 @@ const CreateShipment = () => {
                           <input
                             type="number"
                             min="1"
-                            max={product.quantity}
                             value={selectedProduct?.quantity || 1}
                             onChange={(e) => handleProductChange(product._id, e.target.value)}
                             style={styles.quantityInput}

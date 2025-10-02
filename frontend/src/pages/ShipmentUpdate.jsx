@@ -385,7 +385,7 @@ const ShipmentUpdate = () => {
         </div>
         <button 
           style={styles.backButton}
-          onClick={() => navigate("/shipments")}
+          onClick={() => navigate("/shipments/control")}
           onMouseEnter={(e) => {
             e.target.style.backgroundColor = styles.backButtonHover.backgroundColor;
           }}
@@ -403,7 +403,7 @@ const ShipmentUpdate = () => {
     <div style={styles.container}>
       <button 
         style={styles.backButton}
-        onClick={() => navigate("/shipments")}
+        onClick={() => navigate("/shipments/control")}
         onMouseEnter={(e) => {
           e.target.style.backgroundColor = styles.backButtonHover.backgroundColor;
         }}

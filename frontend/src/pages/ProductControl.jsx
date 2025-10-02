@@ -294,12 +294,43 @@ const ProductControl = () => {
         </span>
       </div>
 
+      {/* Low Stock Warning Box */}
+{products.filter((p) => p.quantity !== undefined && p.quantity <= 5).length > 0 && (
+  <div
+    style={{
+      backgroundColor: "#fff3cd",
+      color: "#856404",
+      border: "1px solid #ffeeba",
+      borderRadius: "8px",
+      padding: "15px 20px",
+      marginBottom: "25px",
+      display: "flex",
+      alignItems: "center",
+      gap: "10px",
+      fontWeight: "500",
+      boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
+    }}
+  >
+    ⚠️{" "}
+    <span>
+      <strong>
+        {products.filter((p) => p.quantity !== undefined && p.quantity <= 5).length}
+      </strong>{" "}
+      {products.filter((p) => p.quantity !== undefined && p.quantity <= 5).length === 1
+        ? "product has"
+        : "products have"}{" "}
+      low stock (≤ 5 units).
+    </span>
+  </div>
+)}
+
       <div style={styles.tableContainer}>
         <table style={styles.table}>
           <thead style={styles.tableHeader}>
             <tr>
               <th style={styles.th}>Product Name</th>
               <th style={styles.th}>Product ID</th>
+              <th style={styles.th}>Quantity</th>
               <th style={styles.th}>Actions</th>
             </tr>
           </thead>
@@ -322,6 +353,22 @@ const ProductControl = () => {
                   <td style={styles.td}>
                     <span style={styles.productId}>{product.productID}</span>
                   </td>
+
+                  <td style={styles.td}>
+                    {product.quantity !== undefined ? (
+                      <span
+                        style={{
+                          fontWeight: "600",
+                          color: product.quantity <= 5 ? "#dc3545" : "#023E8A",
+                        }}
+                      >
+                        {product.quantity}
+                      </span>
+                    ) : (
+                      <span style={{ color: "#6c757d", fontStyle: "italic" }}>N/A</span>
+                    )}
+                  </td>
+
                   <td style={styles.td}>
                     <div style={styles.actionsContainer}>
                       <button
