@@ -1,25 +1,54 @@
 import User from "../models/userModel.js";
 import jwt from "jsonwebtoken";
+import validator from "validator";
 
-// Generate JWT
 const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "30d" });
+  if (!process.env.JWT_SECRET) {
+    throw new Error("JWT_SECRET not set in .env");
+  }
+  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES || "30d" });
 };
 
 // Register User
 export const registerUser = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { firstName, lastName, email, password, phone, address, role } = req.body;
+
+    if (!firstName || !lastName || !email || !password) {
+      return res.status(400).json({ message: "Name, email, and password are required" });
+    }
+    if (!validator.isEmail(email)) {
+      return res.status(400).json({ message: "Invalid email format" });
+    }
+    if (password.length < 6) {
+      return res.status(400).json({ message: "Password must be at least 6 characters" });
+    }
+    if (phone && !validator.isMobilePhone(phone + "", "any")) {
+      return res.status(400).json({ message: "Invalid phone number" });
+    }
 
     const userExists = await User.findOne({ email });
     if (userExists) return res.status(400).json({ message: "User already exists" });
 
-    const user = await User.create({ name, email, password });
+    const user = await User.create({
+      firstName,
+      lastName,
+      email,
+      password,
+      phone,
+      address,
+      role: role || "user",
+    });
 
     res.status(201).json({
       _id: user._id,
-      name: user.name,
+      firstName: user.firstName,
+      lastName: user.lastName,
       email: user.email,
+      phone: user.phone,
+      address: user.address,
+      role: user.role,
+      isAdmin: user.isAdmin,
       token: generateToken(user._id),
     });
   } catch (error) {
@@ -32,12 +61,21 @@ export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and password are required" });
+    }
+
     const user = await User.findOne({ email });
     if (user && (await user.matchPassword(password))) {
       res.json({
         _id: user._id,
-        name: user.name,
+        firstName: user.firstName,
+        lastName: user.lastName,
         email: user.email,
+        phone: user.phone,
+        address: user.address,
+        role: user.role,
+        isAdmin: user.isAdmin,
         token: generateToken(user._id),
       });
     } else {
@@ -48,10 +86,10 @@ export const loginUser = async (req, res) => {
   }
 };
 
-// Get All Users (admin only)
+// Get All Users admin 
 export const getUsers = async (req, res) => {
   try {
-    const users = await User.find({});
+    const users = await User.find({}).select("-password");
     res.json(users);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -61,9 +99,9 @@ export const getUsers = async (req, res) => {
 // Get User Profile
 export const getUserProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user.id).select("-password");
     if (user) {
-      res.json({ _id: user._id, name: user.name, email: user.email, isAdmin: user.isAdmin });
+      res.json(user);
     } else {
       res.status(404).json({ message: "User not found" });
     }
@@ -78,12 +116,29 @@ export const updateUser = async (req, res) => {
     const user = await User.findById(req.params.id);
 
     if (user) {
-      user.name = req.body.name || user.name;
+      user.firstName = req.body.firstName || user.firstName;
+      user.lastName = req.body.lastName || user.lastName;
       user.email = req.body.email || user.email;
-      if (req.body.password) user.password = req.body.password;
+      user.phone = req.body.phone || user.phone;
+      user.address = req.body.address || user.address;
+      user.role = req.body.role || user.role;
+      if (req.body.password) {
+        if (req.body.password.length < 6) {
+          return res.status(400).json({ message: "Password must be at least 6 characters" });
+        }
+        user.password = req.body.password;
+      }
 
       const updatedUser = await user.save();
-      res.json({ _id: updatedUser._id, name: updatedUser.name, email: updatedUser.email });
+      res.json({
+        _id: updatedUser._id,
+        firstName: updatedUser.firstName,
+        lastName: updateUser.lastName,
+        email: updatedUser.email,
+        phone: updatedUser.phone,
+        address: updatedUser.address,
+        role: updatedUser.role,
+      });
     } else {
       res.status(404).json({ message: "User not found" });
     }
@@ -91,6 +146,7 @@ export const updateUser = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 // Delete User
 export const deleteUser = async (req, res) => {
@@ -107,6 +163,7 @@ export const deleteUser = async (req, res) => {
   }
 };
 
+
 export const protect = async (req, res, next) => {
   let token;
   if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
@@ -114,11 +171,21 @@ export const protect = async (req, res, next) => {
       token = req.headers.authorization.split(" ")[1];
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       req.user = await User.findById(decoded.id).select("-password");
+      if (!req.user) {
+        return res.status(401).json({ message: "User not found, invalid token" });
+      }
       next();
     } catch (error) {
-      res.status(401).json({ message: "Not authorized, token failed" });
+      return res.status(401).json({ message: "Not authorized, token failed" });
     }
   }
+  if (!token) return res.status(401).json({ message: "Not authorized, no token" });
+};
 
-  if (!token) res.status(401).json({ message: "Not authorized, no token" });
+export const adminOnly = (req, res, next) => {
+  if (req.user && req.user.role === "admin") {
+    next();
+  } else {
+    res.status(403).json({ message: "Not authorized as admin" });
+  }
 };
