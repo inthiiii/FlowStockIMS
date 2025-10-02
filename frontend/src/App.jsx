@@ -29,6 +29,11 @@ import CreateShipment from "./pages/CreateShipment";
 import ShipmentControl from "./pages/ShipmentControl";
 import ShipmentUpdate from "./pages/ShipmentUpdate";
 
+// Delivery Pages
+import CreateDelivery from "./pages/CreateDelivery";
+import DeliveryList from "./pages/DeliveryList";
+import DeliveryUpdatePage from "./pages/DeliveryUpdatePage";
+
 const App = () => {
   return (
     <Router>
@@ -61,6 +66,11 @@ const App = () => {
             <Route path="/shipments/create" element={<CreateShipment />} />
             <Route path="/shipments/control" element={<ShipmentControl />} />
             <Route path="/shipments/update/:id" element={<ShipmentUpdate />} />
+            
+            {/* Delivery Routes */}
+            <Route path="/deliveries/create" element={<CreateDelivery />} />
+            <Route path="/deliveries/list" element={<DeliveryList />} />
+            <Route path="/deliveries/update/:id" element={<DeliveryUpdatePage />} />
 
           </Routes>
         </main>
