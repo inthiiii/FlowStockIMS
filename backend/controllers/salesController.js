@@ -47,17 +47,38 @@ const getSalesByDate = async (req, res) => {
   }
 };
 
-// Create Sale
+// **Create Sale with stock deduction**
 const createSale = async (req, res) => {
-  const { product, customerName, customerEmail, quantity, pricePerUnit, paymentStatus } = req.body;
   try {
-    const totalAmount = quantity * pricePerUnit;
+    const { product, quantity, customerName, customerEmail, pricePerUnit, paymentStatus, saleType } = req.body;
 
-    const sale = new Sale({ product, customerName, customerEmail, quantity, pricePerUnit, totalAmount, paymentStatus });
-    const savedSale = await sale.save();
+    // Find the product
+    const productItem = await Product.findById(product);
+    if (!productItem) return res.status(404).json({ message: "Product not found" });
+
+    // Validate quantity
+    if (quantity > productItem.quantity) {
+      return res.status(400).json({ message: `Quantity exceeds available stock (${productItem.quantity})` });
+    }
+
+    // Calculate total amount
+    let totalAmount = quantity * pricePerUnit;
+    if (saleType === "Cash") totalAmount *= 0.95;
+    if (saleType === "Card") totalAmount *= 1.03;
+    totalAmount = Number(totalAmount.toFixed(2));
+
+    // Create the sale
+    const newSale = new Sale({ product, customerName, customerEmail, quantity, pricePerUnit, totalAmount, paymentStatus, saleType });
+    const savedSale = await newSale.save();
+
+    // Deduct quantity from product stock
+    productItem.quantity -= quantity;
+    await productItem.save();
+
     res.status(201).json(savedSale);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.error(error);
+    res.status(500).json({ message: "Server Error" });
   }
 };
 

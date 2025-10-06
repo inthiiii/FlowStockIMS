@@ -5,77 +5,240 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 import NavigationBar from "./components/NavigationBar";
 
-import HomePage from "./pages/HomePage";  
+// Public Pages (Header + Footer)
+import HomePage from "./pages/HomePage";
 import AboutPage from "./pages/AboutPage";
 import ContactPage from "./pages/ContactPage";
 import ProductView from "./pages/ProductView";
-import ContactUsReceivePage from "./pages/ContactUsReceivePage";
+import LoginPage from "./pages/LoginPage";
 
-// Sales Pages
+// Private Pages (Navigation Bar)
+import DashboardPage from "./pages/DashboardPage";
 import SalesDashboardPage from "./pages/SalesDashboardPage";
 import SalesListPage from "./pages/SalesListPage";
 import AddSalePage from "./pages/AddSalePage";
 import SaleDetailsPage from "./pages/SaleDetailsPage";
 import ReceiptPage from "./pages/ReceiptPage";
 import EditSalePage from "./pages/EditSalePage";
-
-// Product Pages
 import ProductAdd from "./pages/ProductAdd";
 import ProductControl from "./pages/ProductControl";
 import EditProduct from "./pages/EditProduct";
-
-// Shipment Pages
 import CreateShipment from "./pages/CreateShipment";
 import ShipmentControl from "./pages/ShipmentControl";
 import ShipmentUpdate from "./pages/ShipmentUpdate";
-
-// Delivery Pages
 import CreateDelivery from "./pages/CreateDelivery";
 import DeliveryList from "./pages/DeliveryList";
 import DeliveryUpdatePage from "./pages/DeliveryUpdatePage";
+import ContactUsReceivePage from "./pages/ContactUsReceivePage";
+
+// Layout wrapper for Navigation Pages
+const NavigationLayout = ({ children }) => {
+  return (
+    <div style={{ display: "flex", minHeight: "100vh" }}>
+      <NavigationBar />
+      <div style={{ flex: 1, background: "#f8f9fa", padding: "30px" }}>
+        {children}
+      </div>
+    </div>
+  );
+};
 
 const App = () => {
   return (
     <Router>
-      <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-        <Header />
-        <main style={{ flex: 1, padding: "20px" }}>
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/about" element={<AboutPage />} />
-            <Route path="/contact" element={<ContactPage />} />
-            <Route path="/products" element={<ProductView />} />
+      <Routes>
+        {/* Pages with Header + Footer */}
+        <Route
+          path="/"
+          element={
+            <>
+              <Header />
+              <HomePage />
+              <Footer />
+            </>
+          }
+        />
+        <Route
+          path="/about"
+          element={
+            <>
+              <Header />
+              <AboutPage />
+              <Footer />
+            </>
+          }
+        />
+        <Route
+          path="/contact"
+          element={
+            <>
+              <Header />
+              <ContactPage />
+              <Footer />
+            </>
+          }
+        />
+        <Route
+          path="/products"
+          element={
+            <>
+              <Header />
+              <ProductView />
+              <Footer />
+            </>
+          }
+        />
 
-            {/* Contact Us Receive Route */}  
-            <Route path="/contact/viewcontact" element={<ContactUsReceivePage />} />
+        {/* Temporary Login Page (Header + Footer) */}
+        <Route
+          path="/login"
+          element={
+            <>
+              <Header />
+              <LoginPage />
+              <Footer />
+            </>
+          }
+        />
 
-            {/* Sales Routes */}
-            <Route path="/sales/dashboard" element={<SalesDashboardPage />} />
-            <Route path="/sales/list" element={<SalesListPage />} />
-            <Route path="/sales/add" element={<AddSalePage />} />
-            <Route path="/sales/:id" element={<SaleDetailsPage />} />
-            <Route path="/sales/:id/receipt" element={<ReceiptPage />} />
-            <Route path="/sales/edit/:id" element={<EditSalePage />} />
-
-            {/* Product Routes */}
-            <Route path="/products/entry" element={<ProductAdd />} />
-            <Route path="/products/control" element={<ProductControl />} />
-            <Route path="/product/:id" element={<EditProduct />} />
-
-            {/* Shipment Routes */}
-            <Route path="/shipments/create" element={<CreateShipment />} />
-            <Route path="/shipments/control" element={<ShipmentControl />} />
-            <Route path="/shipments/update/:id" element={<ShipmentUpdate />} />
-            
-            {/* Delivery Routes */}
-            <Route path="/deliveries/create" element={<CreateDelivery />} />
-            <Route path="/deliveries/list" element={<DeliveryList />} />
-            <Route path="/deliveries/update/:id" element={<DeliveryUpdatePage />} />
-
-          </Routes>
-        </main>
-        <Footer />
-      </div>
+        {/* Pages with Navigation Bar */}
+        <Route
+          path="/dashboard"
+          element={
+            <NavigationLayout>
+              <DashboardPage />
+            </NavigationLayout>
+          }
+        />
+        <Route
+          path="/contact/contactview"
+          element={
+            <NavigationLayout>
+              <ContactUsReceivePage />
+            </NavigationLayout>
+          }
+        />
+        <Route
+          path="/sales/dashboard"
+          element={
+            <NavigationLayout>
+              <SalesDashboardPage />
+            </NavigationLayout>
+          }
+        />
+        <Route
+          path="/sales/list"
+          element={
+            <NavigationLayout>
+              <SalesListPage />
+            </NavigationLayout>
+          }
+        />
+        <Route
+          path="/sales/add"
+          element={
+            <NavigationLayout>
+              <AddSalePage />
+            </NavigationLayout>
+          }
+        />
+        <Route
+          path="/sales/:id"
+          element={
+            <NavigationLayout>
+              <SaleDetailsPage />
+            </NavigationLayout>
+          }
+        />
+        <Route
+          path="/sales/:id/receipt"
+          element={
+            <NavigationLayout>
+              <ReceiptPage />
+            </NavigationLayout>
+          }
+        />
+        <Route
+          path="/sales/edit/:id"
+          element={
+            <NavigationLayout>
+              <EditSalePage />
+            </NavigationLayout>
+          }
+        />
+        <Route
+          path="/products/entry"
+          element={
+            <NavigationLayout>
+              <ProductAdd />
+            </NavigationLayout>
+          }
+        />
+        <Route
+          path="/products/control"
+          element={
+            <NavigationLayout>
+              <ProductControl />
+            </NavigationLayout>
+          }
+        />
+        <Route
+          path="/product/:id"
+          element={
+            <NavigationLayout>
+              <EditProduct />
+            </NavigationLayout>
+          }
+        />
+        <Route
+          path="/shipments/create"
+          element={
+            <NavigationLayout>
+              <CreateShipment />
+            </NavigationLayout>
+          }
+        />
+        <Route
+          path="/shipments/control"
+          element={
+            <NavigationLayout>
+              <ShipmentControl />
+            </NavigationLayout>
+          }
+        />
+        <Route
+          path="/shipments/update/:id"
+          element={
+            <NavigationLayout>
+              <ShipmentUpdate />
+            </NavigationLayout>
+          }
+        />
+        <Route
+          path="/deliveries/create"
+          element={
+            <NavigationLayout>
+              <CreateDelivery />
+            </NavigationLayout>
+          }
+        />
+        <Route
+          path="/deliveries/list"
+          element={
+            <NavigationLayout>
+              <DeliveryList />
+            </NavigationLayout>
+          }
+        />
+        <Route
+          path="/deliveries/update/:id"
+          element={
+            <NavigationLayout>
+              <DeliveryUpdatePage />
+            </NavigationLayout>
+          }
+        />
+      </Routes>
     </Router>
   );
 };

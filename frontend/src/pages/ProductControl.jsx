@@ -264,7 +264,7 @@ const ProductControl = () => {
     <div style={styles.container}>
       <div style={styles.header}>
         <h1 style={styles.title}>Product Control</h1>
-        <p style={styles.subtitle}>Manage and control your product inventory</p>
+        <p style={styles.subtitle}>Manage and control the product inventory</p>
       </div>
 
       <div style={styles.searchContainer}>

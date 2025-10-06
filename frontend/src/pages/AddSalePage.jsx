@@ -7,9 +7,9 @@ const AddSalePage = () => {
     customerEmail: "", 
     quantity: 1, 
     pricePerUnit: 0,
-    saleType: "", // New: Cash, Card, Credit
+    saleType: "", 
     totalAmount: 0,
-    paymentStatus: "", // Paid or Pending
+    paymentStatus: "", 
   });
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -31,40 +31,57 @@ const AddSalePage = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    // Prevent entering quantity greater than available stock
-    if (name === "quantity" && selectedProduct && Number(value) > selectedProduct.quantity) {
-      alert(`⚠️ Quantity cannot exceed available stock (${selectedProduct.quantity})`);
-      return;
-    }
-
     setForm(prev => {
       const updatedForm = { ...prev, [name]: value };
 
-      // Recalculate total if quantity, price, or saleType changes
-      if (name === "quantity" || name === "pricePerUnit" || name === "saleType") {
+      // If selecting a product
+      if (name === "product" && value) {
+        const product = products.find(p => p._id === value);
+        setSelectedProduct({ 
+          ...product, 
+          originalQuantity: product.quantity, // keeping the original stock
+          displayQuantity: product.quantity   // for realtime deduction display
+        });
+        updatedForm.quantity = 1; // reset quantity
+      }
+
+      // If changing quantity
+      if (name === "quantity" && selectedProduct) {
+        const qty = Number(value);
+        if (qty > selectedProduct.originalQuantity) {
+          alert(`⚠️ Quantity cannot exceed available stock (${selectedProduct.originalQuantity})`);
+          return prev; // do not update; if not will make the current quantity to re look when am entering the sale
+        }
+        updatedForm.quantity = qty;
+
+        // Update display quantity for user feedback
+        setSelectedProduct(prev => ({
+          ...prev,
+          displayQuantity: prev.originalQuantity - qty
+        }));
+      }
+
+      // Recalculate total and payment status
+      if (["quantity", "pricePerUnit", "saleType"].includes(name)) {
         updatedForm.totalAmount = calculateTotal(updatedForm.quantity, updatedForm.pricePerUnit, updatedForm.saleType);
         updatedForm.paymentStatus = determinePaymentStatus(updatedForm.saleType);
       }
 
-      // If product is selected, find the product details
-      if (name === "product" && value) {
-        const product = products.find(p => p._id === value);
-        setSelectedProduct(product);
-      } else if (name === "product" && !value) {
-        setSelectedProduct(null);
-      }
+      // If clearing product
+      if (name === "product" && !value) setSelectedProduct(null);
 
       return updatedForm;
     });
   };
 
+  // Total dynamically making it to change for the payment type
   const calculateTotal = (quantity, price, saleType) => {
     let total = quantity * price;
-    if (saleType === "Cash") total *= 0.95; // 5% discount
-    if (saleType === "Card") total *= 1.03; // 3% bank charge
+    if (saleType === "Cash") total *= 0.95;
+    if (saleType === "Card") total *= 1.03;
     return Number(total.toFixed(2));
   };
-
+  
   const determinePaymentStatus = (saleType) => {
     if (saleType === "Cash" || saleType === "Card") return "Paid";
     if (saleType === "Credit") return "Pending";
@@ -79,9 +96,9 @@ const AddSalePage = () => {
       return;
     }
 
-    // Check if quantity exceeds available stock before submitting
-    if (selectedProduct && form.quantity > selectedProduct.quantity) {
-      alert(`⚠️ Quantity exceeds available stock (${selectedProduct.quantity}). Please enter a valid amount.`);
+    // Validate against original stock
+    if (selectedProduct && form.quantity > selectedProduct.originalQuantity) {
+      alert(`⚠️ Quantity exceeds available stock (${selectedProduct.originalQuantity}). Please enter a valid amount.`);
       return;
     }
 
@@ -157,7 +174,7 @@ const AddSalePage = () => {
                 <div style={styles.productInfoTitle}>Selected Product Details:</div>
                 <div style={styles.productInfoText}><strong>Name:</strong> {selectedProduct.productName}</div>
                 <div style={styles.productInfoText}><strong>ID:</strong> {selectedProduct.productID}</div>
-                <div style={styles.productInfoText}><strong>Available Quantity:</strong> {selectedProduct.quantity}</div>
+                <div style={styles.productInfoText}><strong>Available Quantity:</strong> {selectedProduct.displayQuantity}</div>
                 {selectedProduct.description && <div style={styles.productInfoText}><strong>Description:</strong> {selectedProduct.description}</div>}
               </div>
             )}
@@ -179,7 +196,7 @@ const AddSalePage = () => {
           <div style={styles.formRow}>
             <div style={styles.formGroup}>
               <label style={styles.label}>Quantity</label>
-              <input type="number" name="quantity" value={form.quantity} onChange={handleChange} required min="1" max={selectedProduct ? selectedProduct.quantity : undefined} style={styles.input} />
+              <input type="number" name="quantity" value={form.quantity} onChange={handleChange} required min="1" max={selectedProduct ? selectedProduct.originalQuantity : undefined} style={styles.input} />
             </div>
             <div style={styles.formGroup}>
               <label style={styles.label}>Price Per Unit (LKR)</label>

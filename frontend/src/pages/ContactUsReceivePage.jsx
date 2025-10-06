@@ -24,6 +24,7 @@ const ContactUsReceivePage = () => {
       .finally(() => setLoading(false));
   }, []);
 
+  // Handling analyze part
   const handleAnalyze = async () => {
     if (messages.length === 0) {
       alert("No messages to analyze!");
@@ -68,6 +69,7 @@ const ContactUsReceivePage = () => {
     }
   };
 
+  // Logic for the Analyzing of messages
   const handleAnalyzeMessages = () => {
     const analyzedMessages = messages.map((msg) => {
       const text = msg.message.toLowerCase();
@@ -99,7 +101,7 @@ const ContactUsReceivePage = () => {
       return { ...msg, importance, summary };
     });
   
-    console.log("Analyzed messages:", analyzedMessages); // ✅ For debugging
+    console.log("Analyzed messages:", analyzedMessages); //  For debugging
     setMessages(analyzedMessages);
   };
 
@@ -417,18 +419,19 @@ const ContactUsReceivePage = () => {
               e.target.style.boxShadow = "none";
             }}
           />
-          <button
-  onClick={handleAnalyzeMessages}
-  style={{ ...styles.button, ...styles.replyButton }}
-  onMouseEnter={(e) => {
-    e.target.style.backgroundColor = styles.replyButtonHover.backgroundColor;
-    e.target.style.transform = styles.replyButtonHover.transform;
-  }}
-  onMouseLeave={(e) => {
-    e.target.style.backgroundColor = styles.replyButton.backgroundColor;
-    e.target.style.transform = "none";
-  }}
->
+            <button
+    onClick={handleAnalyzeMessages}
+    style={{ ...styles.button, ...styles.replyButton }}
+    onMouseEnter={(e) => {
+      e.target.style.backgroundColor = styles.replyButtonHover.backgroundColor;
+      e.target.style.transform = styles.replyButtonHover.transform;
+    }}
+    onMouseLeave={(e) => {
+      e.target.style.backgroundColor = styles.replyButton.backgroundColor;
+      e.target.style.transform = "none";
+    }}
+  >
+    {analyzing ? "Analyzing..." : "Analyze Messages"}
   Analyze Messages
 </button>
         </div>

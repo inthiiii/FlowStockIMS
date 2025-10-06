@@ -31,6 +31,7 @@ const SalesListPage = () => {
     fetchSales();
   }, []);
 
+  // Validation for the delete function
   const deleteSale = async (id) => {
     if (window.confirm("Are you sure you want to delete this sale?")) {
       try {
@@ -43,6 +44,7 @@ const SalesListPage = () => {
     }
   };
 
+  // Validation for the return function
   const returnSale = async (id) => {
     if (window.confirm("Are you sure you want to return this sale?")) {
       try {
@@ -72,7 +74,7 @@ const SalesListPage = () => {
     return true;
   });
 
-  // ✅ Total revenue (excluding returned sales)
+  // Total revenue (excluding returned sales)
   const totalRevenue = filteredSales
     .filter((sale) => sale.paymentStatus !== "Returned") // exclude returned sales
     .reduce((sum, sale) => sum + (sale.totalAmount || 0), 0)
@@ -130,6 +132,7 @@ const SalesListPage = () => {
     XLSX.writeFile(workbook, "sales_report.xlsx");
   };
 
+  // Main Feature
   // Determine badge color and text based on totalAmount
   const getImportance = (amount) => {
     if (!amount) return { text: "Low Value", color: "#28a745" };
