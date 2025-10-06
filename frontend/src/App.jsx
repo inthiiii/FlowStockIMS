@@ -11,6 +11,8 @@ import AboutPage from "./pages/AboutPage";
 import ContactPage from "./pages/ContactPage";
 import ProductView from "./pages/ProductView";
 import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+import ForgotPassword from "./pages/ForgotPassword";
 
 // Private Pages (Navigation Bar)
 import DashboardPage from "./pages/DashboardPage";
@@ -96,6 +98,30 @@ const App = () => {
             <>
               <Header />
               <LoginPage />
+              <Footer />
+            </>
+          }
+        />
+
+        {/* Forgot Password Page (Header + Footer) */}
+        <Route
+          path="/forgot-password"
+          element={
+            <>
+              <Header />
+              <ForgotPassword />
+              <Footer />
+            </>
+          }
+        />
+
+        {/* Register Page (Header + Footer) */}
+        <Route
+          path="/register"
+          element={
+            <>
+              <Header />
+              <RegisterPage />
               <Footer />
             </>
           }

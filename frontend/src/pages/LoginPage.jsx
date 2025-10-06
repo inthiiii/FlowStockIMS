@@ -23,6 +23,10 @@ const LoginPage = () => {
     }, 1500);
   };
 
+  const handleSignup = () => {
+    navigate("/register");
+  };
+
   const styles = {
     container: {
       display: "flex",
@@ -227,6 +231,24 @@ const LoginPage = () => {
       cursor: "not-allowed",
       transform: "none",
     },
+    signupContainer: {
+      marginTop: "16px",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      gap: "8px",
+      color: "#6c757d",
+      fontSize: "0.95rem",
+    },
+    signupButton: {
+      background: "none",
+      border: "none",
+      color: "#023E8A",
+      fontWeight: "600",
+      cursor: "pointer",
+      padding: 0,
+      textDecoration: "underline",
+    },
     spinner: {
       display: "inline-block",
       width: "20px",
@@ -358,7 +380,7 @@ const LoginPage = () => {
                 <span>Remember me</span>
               </label>
               <a
-                href="#"
+                href="/forgot-password"
                 style={styles.forgotLink}
                 onMouseEnter={(e) => {
                   e.target.style.color = styles.forgotLinkHover.color;
@@ -395,8 +417,15 @@ const LoginPage = () => {
               disabled={loading}
             >
               {loading && <span style={styles.spinner}></span>}
-              {loading ? "Signing In..." : "Sign In"}
+              {loading ? "Signing In..." : "Login"}
             </button>
+
+            <div style={styles.signupContainer}>
+              <span>Don't have an account?</span>
+              <button type="button" style={styles.signupButton} onClick={handleSignup}>
+                Sign Up
+              </button>
+            </div>
           </form>
 
           <div style={styles.footer}>
