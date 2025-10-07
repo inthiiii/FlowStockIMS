@@ -328,7 +328,7 @@ const LoginPage = () => {
                 <input
                   type="text"
                   name="username"
-                  placeholder="Enter your username"
+                  placeholder="Enter your email address"
                   value={formData.username}
                   onChange={handleChange}
                   onFocus={() => setFocusedField('username')}

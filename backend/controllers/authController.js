@@ -46,6 +46,42 @@ export const login = async (req, res) => {
   }
 };
 
+export const listUsers = async (_req, res) => {
+  try {
+    const users = await User.find({}, '-passwordHash -resetPasswordToken -resetPasswordExpires');
+    return res.json(users);
+  } catch (err) {
+    return res.status(500).json({ message: 'Server error' });
+  }
+};
+
+export const updateUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { firstName, lastName, phone, email, role } = req.body;
+    const updated = await User.findByIdAndUpdate(
+      id,
+      { firstName, lastName, phone, email, role },
+      { new: true, runValidators: true, select: '-passwordHash -resetPasswordToken -resetPasswordExpires' }
+    );
+    if (!updated) return res.status(404).json({ message: 'User not found' });
+    return res.json(updated);
+  } catch (err) {
+    return res.status(500).json({ message: 'Server error' });
+  }
+};
+
+export const deleteUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deleted = await User.findByIdAndDelete(id);
+    if (!deleted) return res.status(404).json({ message: 'User not found' });
+    return res.json({ message: 'User deleted' });
+  } catch (err) {
+    return res.status(500).json({ message: 'Server error' });
+  }
+};
+
 export const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
