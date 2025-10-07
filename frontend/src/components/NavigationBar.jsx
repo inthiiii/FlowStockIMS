@@ -437,6 +437,24 @@ const NavigationBar = () => {
             />
           </div>
 
+          {/* User Dashboard */}
+          <MenuItem
+            icon="🧑"
+            label="User Dashboard"
+            hasSubmenu
+            isExpanded={expandedMenus.userDashboard}
+            onClick={() => toggleSubmenu('userDashboard')}
+          />
+          <div style={{
+            ...styles.submenu,
+            ...(expandedMenus.userDashboard && styles.submenuExpanded)
+          }}>
+            <SubMenuItem
+              label="User Control"
+              onClick={() => handleNavClick("/user/control")}
+            />
+          </div>
+
           {/* Settings */}
           <MenuItem
             icon="⚙️"

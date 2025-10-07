@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { authService } from "../services/authService";
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
@@ -48,7 +49,7 @@ const ForgotPassword = () => {
     modalMessage: { color: "#0056b3", fontSize: "1rem", marginTop: "8px" },
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email.trim()) {
       setError("Email is required");
@@ -60,15 +61,18 @@ const ForgotPassword = () => {
     }
     setError("");
     setSubmitting(true);
-    setTimeout(() => {
-      setSubmitting(false);
-      // Show success modal
-      const message = `If an account exists for ${email}, a reset link has been sent.`;
+    try {
+      const { message } = await authService.forgotPassword({ email });
+      const finalMessage = message || `If an account exists for ${email}, a reset link has been sent.`;
       const el = document.getElementById("fp-success-msg");
-      if (el) el.textContent = message;
-      setSuccessMessage(message);
+      if (el) el.textContent = finalMessage;
+      setSuccessMessage(finalMessage);
       setTimeout(() => navigate("/login"), 1400);
-    }, 1000);
+    } catch (err) {
+      setError("Something went wrong. Please try again later.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (

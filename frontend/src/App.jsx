@@ -32,6 +32,8 @@ import CreateDelivery from "./pages/CreateDelivery";
 import DeliveryList from "./pages/DeliveryList";
 import DeliveryUpdatePage from "./pages/DeliveryUpdatePage";
 import ContactUsReceivePage from "./pages/ContactUsReceivePage";
+import UserDashboard from "./pages/UserDashboard";
+import UserControl from "./pages/UserControl";
 
 // Layout wrapper for Navigation Pages
 const NavigationLayout = ({ children }) => {
@@ -133,6 +135,22 @@ const App = () => {
           element={
             <NavigationLayout>
               <DashboardPage />
+            </NavigationLayout>
+          }
+        />
+        <Route
+          path="/user/dashboard"
+          element={
+            <NavigationLayout>
+              <UserDashboard />
+            </NavigationLayout>
+          }
+        />
+        <Route
+          path="/user/control"
+          element={
+            <NavigationLayout>
+              <UserControl />
             </NavigationLayout>
           }
         />

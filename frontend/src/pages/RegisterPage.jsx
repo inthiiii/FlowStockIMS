@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { authService } from "../services/authService";
 
 const RegisterPage = () => {
   const navigate = useNavigate();
@@ -256,14 +257,22 @@ const RegisterPage = () => {
     e.preventDefault();
     if (!validate()) return;
     setSubmitting(true);
-    // Simulate API call then show success and navigate to login
-    setTimeout(() => {
-      setSubmitting(false);
-      setSuccessMessage(
-        `Registration successful! A welcome email has been sent to ${formData.email}.`
-      );
+    try {
+      await authService.register({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        phone: formData.phone,
+        email: formData.email,
+        password: formData.password,
+        role: formData.role || 'user',
+      });
+      setSuccessMessage(`Registration successful! A welcome email has been sent to ${formData.email}.`);
       setTimeout(() => navigate("/login"), 1400);
-    }, 1200);
+    } catch (e) {
+      setErrors({ ...errors, email: (e?.response?.data?.message) || 'Registration failed' });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (

@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { authService } from "../services/authService";
 
 const LoginPage = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ username: "", password: "" });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [focusedField, setFocusedField] = useState(null);
 
@@ -14,13 +16,17 @@ const LoginPage = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setError("");
     setLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      // Backend expects email, map username -> email
+      await authService.login({ email: formData.username, password: formData.password });
       navigate("/dashboard");
-    }, 1500);
+    } catch (e) {
+      setError("Invalid credentials");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSignup = () => {
@@ -336,6 +342,9 @@ const LoginPage = () => {
                 />
                 <span style={styles.inputIcon}>👤</span>
               </div>
+            {error && (
+              <div style={{ color: "#dc3545", fontSize: "0.9rem" }}>{error}</div>
+            )}
             </div>
 
             {/* Password Field */}
