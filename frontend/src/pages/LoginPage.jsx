@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { authService } from "../services/authService";
 
 const LoginPage = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ username: "", password: "" });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [focusedField, setFocusedField] = useState(null);
 
@@ -14,13 +16,21 @@ const LoginPage = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setError("");
     setLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      // Backend expects email, map username -> email
+      await authService.login({ email: formData.username, password: formData.password });
       navigate("/dashboard");
-    }, 1500);
+    } catch (e) {
+      setError("Invalid credentials");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSignup = () => {
+    navigate("/register");
   };
 
   const styles = {
@@ -227,6 +237,24 @@ const LoginPage = () => {
       cursor: "not-allowed",
       transform: "none",
     },
+    signupContainer: {
+      marginTop: "16px",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      gap: "8px",
+      color: "#6c757d",
+      fontSize: "0.95rem",
+    },
+    signupButton: {
+      background: "none",
+      border: "none",
+      color: "#023E8A",
+      fontWeight: "600",
+      cursor: "pointer",
+      padding: 0,
+      textDecoration: "underline",
+    },
     spinner: {
       display: "inline-block",
       width: "20px",
@@ -300,7 +328,7 @@ const LoginPage = () => {
                 <input
                   type="text"
                   name="username"
-                  placeholder="Enter your username"
+                  placeholder="Enter your email address"
                   value={formData.username}
                   onChange={handleChange}
                   onFocus={() => setFocusedField('username')}
@@ -314,6 +342,9 @@ const LoginPage = () => {
                 />
                 <span style={styles.inputIcon}>👤</span>
               </div>
+            {error && (
+              <div style={{ color: "#dc3545", fontSize: "0.9rem" }}>{error}</div>
+            )}
             </div>
 
             {/* Password Field */}
@@ -358,7 +389,7 @@ const LoginPage = () => {
                 <span>Remember me</span>
               </label>
               <a
-                href="#"
+                href="/forgot-password"
                 style={styles.forgotLink}
                 onMouseEnter={(e) => {
                   e.target.style.color = styles.forgotLinkHover.color;
@@ -395,8 +426,15 @@ const LoginPage = () => {
               disabled={loading}
             >
               {loading && <span style={styles.spinner}></span>}
-              {loading ? "Signing In..." : "Sign In"}
+              {loading ? "Signing In..." : "Login"}
             </button>
+
+            <div style={styles.signupContainer}>
+              <span>Don't have an account?</span>
+              <button type="button" style={styles.signupButton} onClick={handleSignup}>
+                Sign Up
+              </button>
+            </div>
           </form>
 
           <div style={styles.footer}>

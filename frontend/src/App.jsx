@@ -11,6 +11,8 @@ import AboutPage from "./pages/AboutPage";
 import ContactPage from "./pages/ContactPage";
 import ProductView from "./pages/ProductView";
 import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+import ForgotPassword from "./pages/ForgotPassword";
 
 // Private Pages (Navigation Bar)
 import DashboardPage from "./pages/DashboardPage";
@@ -30,6 +32,8 @@ import CreateDelivery from "./pages/CreateDelivery";
 import DeliveryList from "./pages/DeliveryList";
 import DeliveryUpdatePage from "./pages/DeliveryUpdatePage";
 import ContactUsReceivePage from "./pages/ContactUsReceivePage";
+import UserDashboard from "./pages/UserDashboard";
+import UserControl from "./pages/UserControl";
 
 // Layout wrapper for Navigation Pages
 const NavigationLayout = ({ children }) => {
@@ -101,12 +105,52 @@ const App = () => {
           }
         />
 
+        {/* Forgot Password Page (Header + Footer) */}
+        <Route
+          path="/forgot-password"
+          element={
+            <>
+              <Header />
+              <ForgotPassword />
+              <Footer />
+            </>
+          }
+        />
+
+        {/* Register Page (Header + Footer) */}
+        <Route
+          path="/register"
+          element={
+            <>
+              <Header />
+              <RegisterPage />
+              <Footer />
+            </>
+          }
+        />
+
         {/* Pages with Navigation Bar */}
         <Route
           path="/dashboard"
           element={
             <NavigationLayout>
               <DashboardPage />
+            </NavigationLayout>
+          }
+        />
+        <Route
+          path="/user/dashboard"
+          element={
+            <NavigationLayout>
+              <UserDashboard />
+            </NavigationLayout>
+          }
+        />
+        <Route
+          path="/user/control"
+          element={
+            <NavigationLayout>
+              <UserControl />
             </NavigationLayout>
           }
         />
