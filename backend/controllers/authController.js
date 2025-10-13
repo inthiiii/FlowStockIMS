@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import User from '../models/User.js';
 import { sendWelcomeEmail, sendPasswordResetEmail } from '../services/emailService.js';
 
@@ -107,6 +108,47 @@ export const forgotPassword = async (req, res) => {
     // Always return the same message for security (don't reveal if email exists)
     return res.json({ message: 'If an account exists, a reset link has been sent.' });
   } catch (err) {
+    return res.status(500).json({ message: 'Server error' });
+  }
+};
+
+export const resetPassword = async (req, res) => {
+  try {
+    const { token, password } = req.body;
+    
+    if (!token || !password) {
+      return res.status(400).json({ message: 'Token and password are required' });
+    }
+
+    // Validate password strength: exactly 6, 1 uppercase, 1 number, 1 special char
+    const strongRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{6}$/;
+    if (!strongRegex.test(password)) {
+      return res.status(400).json({ message: 'Password must be exactly 6 characters and include 1 uppercase letter, 1 number, and 1 special character' });
+    }
+    
+    // Hash the token to compare with stored hash
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+    
+    // Find user with valid token
+    const user = await User.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpires: { $gt: Date.now() }
+    });
+    
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid or expired reset token' });
+    }
+    
+    // Update password
+    const passwordHash = await bcrypt.hash(password, 10);
+    user.passwordHash = passwordHash;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+    
+    return res.json({ message: 'Password has been reset successfully' });
+  } catch (err) {
+    console.error('Password reset error:', err);
     return res.status(500).json({ message: 'Server error' });
   }
 };

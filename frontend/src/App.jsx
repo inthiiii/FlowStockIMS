@@ -13,6 +13,7 @@ import ProductView from "./pages/ProductView";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ForgotPassword from "./pages/ForgotPassword";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 
 // Private Pages (Navigation Bar)
 import DashboardPage from "./pages/DashboardPage";
@@ -112,6 +113,18 @@ const App = () => {
             <>
               <Header />
               <ForgotPassword />
+              <Footer />
+            </>
+          }
+        />
+
+        {/* Reset Password Page (Header + Footer) */}
+        <Route
+          path="/reset-password"
+          element={
+            <>
+              <Header />
+              <ResetPasswordPage />
               <Footer />
             </>
           }

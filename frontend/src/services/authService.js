@@ -16,6 +16,10 @@ export const authService = {
     const { data } = await axios.post(`${API_BASE}/auth/forgot-password`, payload);
     return data;
   },
+  async resetPassword(payload) {
+    const { data } = await axios.post(`${API_BASE}/auth/reset-password`, payload);
+    return data;
+  },
 };
 
 
