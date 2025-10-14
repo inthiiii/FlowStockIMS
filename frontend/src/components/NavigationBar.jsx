@@ -343,6 +343,14 @@ const NavigationBar = () => {
               label="Product Control"
               onClick={() => handleNavClick("/products/control")}
             />
+            <SubMenuItem
+              label="Favorites"
+              onClick={() => handleNavClick("/products/favorites")}
+            />
+            <SubMenuItem
+              label="Product List"
+              onClick={() => handleNavClick("/products/list")}
+            />
           </div>
 
           {/* Sales */}
@@ -434,6 +442,28 @@ const NavigationBar = () => {
             <SubMenuItem
               label="Attendance"
               onClick={() => handleNavClick("/attendance")}
+            />
+          </div>
+
+          {/* User Dashboard */}
+          <MenuItem
+            icon="🧑"
+            label="Users"
+            hasSubmenu
+            isExpanded={expandedMenus.userDashboard}
+            onClick={() => toggleSubmenu('userDashboard')}
+          />
+          <div style={{
+            ...styles.submenu,
+            ...(expandedMenus.userDashboard && styles.submenuExpanded)
+          }}>
+            <SubMenuItem
+              label="User Control"
+              onClick={() => handleNavClick("/user/control")}
+            />
+            <SubMenuItem
+              label="Customer Control"
+              onClick={() => handleNavClick("/user/customers")}
             />
           </div>
 

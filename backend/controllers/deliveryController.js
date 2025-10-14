@@ -3,37 +3,39 @@ import Sale from "../models/salesModel.js";
 
 // Create a delivery from a sale
 export const createDelivery = async (req, res) => {
-    try {
-      const { saleId, partner } = req.body;
-  
-      // Check if sale exists
-      const sale = await Sale.findById(saleId).populate("product");
-      if (!sale) {
-        return res.status(404).json({ message: "Sale not found" });
-      }
-  
-      // Check if a delivery already exists for this sale
-      const existingDelivery = await Delivery.findOne({ sale: saleId });
-      if (existingDelivery) {
-        return res.status(400).json({ message: "Delivery already created for this sale" });
-      }
-  
-      // Check if partner is provided
-      if (!partner) return res.status(400).json({ message: "Partner is required" });
-  
-      const newDelivery = new Delivery({
-        sale: saleId,
-        partner,
-        status: "Pending",
-      });
-  
-      const savedDelivery = await newDelivery.save();
-  
-      res.status(201).json(savedDelivery);
-    } catch (error) {
-      res.status(400).json({ message: error.message });
+  try {
+    const { saleId, partner, location } = req.body;
+
+    // Check if sale exists
+    const sale = await Sale.findById(saleId).populate("product");
+    if (!sale) {
+      return res.status(404).json({ message: "Sale not found" });
     }
-  };
+
+    // Check if delivery already exists
+    const existingDelivery = await Delivery.findOne({ sale: saleId });
+    if (existingDelivery) {
+      return res.status(400).json({ message: "Delivery already created for this sale" });
+    }
+
+    // Validation
+    if (!partner) return res.status(400).json({ message: "Partner is required" });
+    if (!location) return res.status(400).json({ message: "Location is required" });
+
+    // Create delivery
+    const newDelivery = new Delivery({
+      sale: saleId,
+      partner,
+      location,
+      status: "Pending",
+    });
+
+    const savedDelivery = await newDelivery.save();
+    res.status(201).json(savedDelivery);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
 
 // Get all deliveries (with sale + product details)
 export const getDeliveries = async (req, res) => {

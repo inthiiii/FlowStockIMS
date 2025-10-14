@@ -10,6 +10,10 @@ const deliverySchema = new mongoose.Schema({
       type: String,
       required: true,
     },
+    location: {
+      type: String,
+      required: true,
+    },
     status: {
       type: String,
       enum: ["Pending", "Shipped", "Delivered", "Cancelled"],

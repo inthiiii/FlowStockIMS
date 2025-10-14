@@ -8,11 +8,11 @@ const productSchema = new mongoose.Schema(
     quantity: { type: Number, required: true },
     reOrderLevel: { type: Number, required: true },
     modelName: { type: String, required: true },
-    image: { type: String }, // store file path or URL
+    image: { type: String },
+    favorite: { type: Boolean, default: false }, // ✅ Favorite feature
   },
   { timestamps: true }
 );
 
 const Product = mongoose.model("Product", productSchema);
-
 export default Product;

@@ -1,4 +1,3 @@
-// src/pages/CreateShipment.jsx
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
@@ -10,12 +9,11 @@ const CreateShipment = () => {
   const [fetchLoading, setFetchLoading] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [animateIn, setAnimateIn] = useState(false);
 
-  // Hardcoded carriers
   const carriers = ["DHL", "FedEx", "UPS", "Aramex", "BlueDart"];
 
   useEffect(() => {
-    // Fetch products from API
     const fetchProducts = async () => {
       try {
         setFetchLoading(true);
@@ -32,22 +30,27 @@ const CreateShipment = () => {
     fetchProducts();
   }, []);
 
+  useEffect(() => {
+    if (!fetchLoading) {
+      setTimeout(() => setAnimateIn(true), 100);
+    }
+  }, [fetchLoading]);
+
   const handleProductChange = (productId, quantity) => {
     setSelectedProducts((prev) => {
       const exists = prev.find((p) => p.product === productId);
       if (exists) {
-        if (quantity === 0 || quantity === "") {
+        const numQuantity = Number(quantity);
+        if (numQuantity <= 0) {
           return prev.filter((p) => p.product !== productId);
         }
         return prev.map((p) =>
-          p.product === productId ? { ...p, quantity: Number(quantity) } : p
+          p.product === productId ? { ...p, quantity: numQuantity } : p
         );
-      } else {
-        if (quantity > 0) {
-          return [...prev, { product: productId, quantity: Number(quantity) }];
-        }
-        return prev;
+      } else if (Number(quantity) > 0) {
+        return [...prev, { product: productId, quantity: Number(quantity) }];
       }
+      return prev;
     });
   };
 
@@ -63,13 +66,13 @@ const CreateShipment = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!carrier || selectedProducts.length === 0) {
-      setError("Please select carrier and at least one product");
+      setError("Please select a carrier and at least one product.");
       return;
     }
 
+    const shipmentId = "SHIP-" + Date.now();
     setLoading(true);
     setError("");
-    const shipmentId = "SHIP-" + Date.now();
 
     try {
       await axios.post("http://localhost:3000/api/shipments", {
@@ -80,312 +83,187 @@ const CreateShipment = () => {
       setSuccess(true);
       setSelectedProducts([]);
       setCarrier("");
-      setTimeout(() => setSuccess(false), 3000);
+      setTimeout(() => setSuccess(false), 4000);
     } catch (err) {
       console.error(err);
       setError("Error creating shipment. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const getTotalItems = () => {
-    return selectedProducts.reduce((total, product) => total + product.quantity, 0);
+    return selectedProducts.reduce((total, p) => total + (p.quantity || 0), 0);
   };
 
   const getSelectedProductDetails = (productId) => {
     return products.find(p => p._id === productId);
   };
 
+  // --- UNIFORM STYLES ---
   const styles = {
     container: {
-      maxWidth: "1000px",
-      margin: "0 auto",
-      padding: "40px 20px",
-      backgroundColor: "#ffffff",
-      minHeight: "100vh",
-      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+      maxWidth: "1600px", margin: "0 auto", padding: "50px 30px",
+      background: "linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%)",
+      minHeight: "100vh", fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
     },
     header: {
-      textAlign: "center",
-      marginBottom: "40px",
+      textAlign: "center", marginBottom: "50px", animation: "fadeInDown 0.6s ease-out"
     },
     title: {
-      color: "#023E8A",
-      fontSize: "2.5rem",
-      fontWeight: "600",
-      margin: "0",
-      marginBottom: "10px",
+      color: "#023E8A", fontSize: "3rem", fontWeight: "700", margin: "0",
+      marginBottom: "12px", letterSpacing: "-1px", textShadow: "0 2px 4px rgba(2, 62, 138, 0.1)"
     },
     subtitle: {
-      color: "#6c757d",
-      fontSize: "1.1rem",
-      margin: "0",
-      fontWeight: "400",
+      color: "#64748b", fontSize: "1.15rem", margin: "0", fontWeight: "400", letterSpacing: "0.3px"
+    },
+    formLayout: {
+      display: "grid", gridTemplateColumns: "2fr 1fr", gap: "30px", alignItems: "start",
     },
     formContainer: {
-      backgroundColor: "#f8f9fa",
-      padding: "40px",
-      borderRadius: "12px",
-      boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-      border: "1px solid #e9ecef",
+      backgroundColor: "#ffffff", padding: "40px", borderRadius: "20px",
+      border: "1px solid rgba(226, 232, 240, 0.8)", boxShadow: "0 10px 40px rgba(0, 0, 0, 0.06)",
+      opacity: 0, transform: "translateY(20px)", transition: "opacity 0.6s ease-out, transform 0.6s ease-out",
     },
-    form: {
-      display: "flex",
-      flexDirection: "column",
-      gap: "30px",
-    },
-    formSection: {
-      backgroundColor: "#ffffff",
-      padding: "25px",
-      borderRadius: "10px",
-      border: "1px solid #e9ecef",
-      boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
-    },
+    animateIn: { opacity: 1, transform: "translateY(0)" },
+    form: { display: "flex", flexDirection: "column", gap: "35px" },
     sectionTitle: {
-      color: "#023E8A",
-      fontSize: "1.3rem",
-      fontWeight: "600",
-      marginBottom: "20px",
-      paddingBottom: "10px",
-      borderBottom: "2px solid #e9ecef",
+      color: "#023E8A", fontSize: "1.5rem", fontWeight: "600",
+      marginBottom: "20px", paddingBottom: "15px", borderBottom: "2px solid #e2e8f0",
     },
-    formGroup: {
-      display: "flex",
-      flexDirection: "column",
-      gap: "8px",
-    },
+    formGroup: { display: "flex", flexDirection: "column", gap: "8px" },
     label: {
-      color: "#023E8A",
-      fontSize: "1rem",
-      fontWeight: "600",
-      textTransform: "uppercase",
-      letterSpacing: "0.5px",
+      fontSize: "0.875rem", fontWeight: "600", color: "#1e293b",
+      letterSpacing: "0.3px", display: "flex", alignItems: "center", gap: "6px"
     },
     select: {
-      padding: "12px 16px",
-      border: "2px solid #e9ecef",
-      borderRadius: "8px",
-      fontSize: "1rem",
-      fontFamily: "inherit",
-      transition: "all 0.3s ease",
-      backgroundColor: "#ffffff",
-      outline: "none",
-      cursor: "pointer",
-    },
-    selectFocus: {
-      borderColor: "#023E8A",
-      boxShadow: "0 0 0 3px rgba(2, 62, 138, 0.1)",
+      padding: "14px 40px 14px 18px", border: "2px solid #e2e8f0", borderRadius: "10px",
+      fontSize: "1rem", fontFamily: "inherit", transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+      backgroundColor: "#ffffff", outline: "none", cursor: "pointer",
+      boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)", appearance: "none",
+      backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23023E8A' d='M6 9L1 4h10z'/%3E%3C/svg%3E\")",
+      backgroundRepeat: "no-repeat", backgroundPosition: "right 16px center"
     },
     productsGrid: {
-      display: "grid",
-      gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-      gap: "15px",
-      marginTop: "15px",
+      display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+      gap: "20px", maxHeight: "500px", overflowY: "auto", padding: "10px",
     },
     productCard: {
-      backgroundColor: "#f8f9fa",
-      padding: "15px",
-      borderRadius: "8px",
-      border: "1px solid #e9ecef",
-      transition: "all 0.3s ease",
+      background: "linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)", padding: "20px",
+      borderRadius: "16px", border: "1px solid #e2e8f0",
+      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)", transition: "all 0.3s ease",
     },
     productCardSelected: {
-      backgroundColor: "#e7f3ff",
-      borderColor: "#023E8A",
-      boxShadow: "0 2px 8px rgba(2, 62, 138, 0.1)",
+      borderColor: "#023E8A", boxShadow: "0 0 0 3px rgba(2, 62, 138, 0.1), 0 8px 16px rgba(0, 0, 0, 0.08)",
     },
-    productHeader: {
-      display: "flex",
-      alignItems: "center",
-      gap: "10px",
-      marginBottom: "10px",
-    },
-    checkbox: {
-      width: "18px",
-      height: "18px",
-      cursor: "pointer",
-    },
-    productName: {
-      fontSize: "1rem",
-      fontWeight: "600",
-      color: "#023E8A",
-      flex: "1",
-    },
-    productInfo: {
-      fontSize: "0.9rem",
-      color: "#6c757d",
-      marginBottom: "10px",
-    },
-    quantityContainer: {
-      display: "flex",
-      alignItems: "center",
-      gap: "10px",
-    },
-    quantityLabel: {
-      fontSize: "0.9rem",
-      fontWeight: "500",
-      color: "#495057",
-    },
+    productHeader: { display: "flex", alignItems: "center", gap: "12px", marginBottom: "12px", cursor: "pointer" },
+    checkbox: { width: "20px", height: "20px", accentColor: "#023E8A" },
+    productName: { fontSize: "1.1rem", fontWeight: "600", color: "#023E8A" },
+    productInfo: { fontSize: "0.9rem", color: "#64748b", lineHeight: "1.5" },
+    quantityContainer: { display: "flex", alignItems: "center", gap: "10px", marginTop: "15px" },
     quantityInput: {
-      width: "80px",
-      padding: "8px",
-      border: "1px solid #e9ecef",
-      borderRadius: "4px",
-      fontSize: "0.9rem",
-      textAlign: "center",
+      width: "80px", padding: "10px", border: "2px solid #e2e8f0", borderRadius: "10px",
+      fontSize: "1rem", textAlign: "center",
     },
-    summarySection: {
-      backgroundColor: "#ffffff",
-      padding: "25px",
-      borderRadius: "10px",
-      border: "1px solid #e9ecef",
-      boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
-    },
-    summaryGrid: {
-      display: "grid",
-      gridTemplateColumns: "1fr 1fr 1fr",
-      gap: "20px",
-      marginBottom: "20px",
+    summaryContainer: {
+      position: "sticky", top: "40px", backgroundColor: "#ffffff", padding: "30px",
+      borderRadius: "20px", border: "1px solid rgba(226, 232, 240, 0.8)",
+      boxShadow: "0 10px 40px rgba(0, 0, 0, 0.06)",
+      opacity: 0, transform: "translateY(20px)",
+      transition: "opacity 0.6s ease-out 0.2s, transform 0.6s ease-out 0.2s",
     },
     summaryCard: {
-      textAlign: "center",
-      padding: "15px",
-      backgroundColor: "#f8f9fa",
-      borderRadius: "8px",
-      border: "1px solid #e9ecef",
+      background: "linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)", padding: "20px",
+      borderRadius: "16px", border: "1px solid #e2e8f0", textAlign: "center",
     },
-    summaryNumber: {
-      fontSize: "2rem",
-      fontWeight: "700",
-      color: "#023E8A",
-      margin: "0 0 5px 0",
-    },
-    summaryLabel: {
-      fontSize: "0.9rem",
-      color: "#6c757d",
-      textTransform: "uppercase",
-      letterSpacing: "0.5px",
-      margin: "0",
-    },
-    selectedProductsList: {
-      backgroundColor: "#e7f3ff",
-      padding: "15px",
-      borderRadius: "8px",
-      border: "1px solid #b3d9ff",
-      marginTop: "15px",
-    },
-    selectedProductsTitle: {
-      fontSize: "1rem",
-      fontWeight: "600",
-      color: "#023E8A",
-      marginBottom: "10px",
-    },
+    summaryValue: { fontSize: "2.2rem", color: "#023E8A", fontWeight: "700" },
+    summaryLabel: { fontSize: "0.875rem", color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px" },
+    selectedProductsList: { listStyle: "none", padding: "0", margin: "0", maxHeight: "200px", overflowY: "auto" },
     selectedProductItem: {
-      fontSize: "0.9rem",
-      color: "#495057",
-      marginBottom: "5px",
-      padding: "5px 0",
-      borderBottom: "1px solid #b3d9ff",
+      display: "flex", justifyContent: "space-between", fontSize: "1rem", color: "#334155",
+      padding: "12px 0", borderBottom: "1px solid #e2e8f0",
     },
     button: {
-      backgroundColor: "#023E8A",
-      color: "#ffffff",
-      padding: "15px 30px",
-      border: "none",
-      borderRadius: "8px",
-      fontSize: "1.1rem",
-      fontWeight: "600",
-      cursor: "pointer",
-      transition: "all 0.3s ease",
-      textTransform: "uppercase",
-      letterSpacing: "0.5px",
-      alignSelf: "center",
-      minWidth: "200px",
-    },
-    buttonHover: {
-      backgroundColor: "#012a5c",
-      transform: "translateY(-2px)",
-      boxShadow: "0 4px 12px rgba(2, 62, 138, 0.3)",
+      background: "linear-gradient(135deg, #023E8A 0%, #0353b8 100%)", color: "#fff",
+      padding: "15px 30px", border: "none", borderRadius: "10px", fontSize: "1.1rem",
+      fontWeight: "600", cursor: "pointer", transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+      boxShadow: "0 4px 12px rgba(2, 62, 138, 0.3)", display: "flex",
+      alignItems: "center", justifyContent: "center", gap: "10px", width: "100%", marginTop: "20px",
     },
     buttonDisabled: {
-      backgroundColor: "#6c757d",
-      cursor: "not-allowed",
-      transform: "none",
-      boxShadow: "none",
+      background: "#94a3b8", boxShadow: "none", cursor: "not-allowed", transform: "none"
     },
-    loadingSpinner: {
-      display: "inline-block",
-      width: "20px",
-      height: "20px",
-      border: "2px solid #ffffff",
-      borderTop: "2px solid transparent",
-      borderRadius: "50%",
-      animation: "spin 1s linear infinite",
-      marginRight: "10px",
+    message: {
+      padding: "15px 20px", borderRadius: "10px", fontSize: "1rem",
+      fontWeight: "500", textAlign: "center", marginBottom: "20px",
+      animation: "fadeInUp 0.5s ease-out",
     },
-    errorMessage: {
-      backgroundColor: "#f8d7da",
-      color: "#721c24",
-      padding: "12px 16px",
-      borderRadius: "8px",
-      border: "1px solid #f5c6cb",
-      fontSize: "0.95rem",
-      fontWeight: "500",
-      marginBottom: "20px",
-      textAlign: "center",
-    },
-    successMessage: {
-      backgroundColor: "#d1edff",
-      color: "#0c5460",
-      padding: "12px 16px",
-      borderRadius: "8px",
-      border: "1px solid #bee5eb",
-      fontSize: "0.95rem",
-      fontWeight: "500",
-      marginBottom: "20px",
-      textAlign: "center",
-    },
+    errorMessage: { backgroundColor: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca" },
+    successMessage: { backgroundColor: "#f0fdf4", color: "#16a34a", border: "1px solid #bbf7d0" },
     loadingContainer: {
-      textAlign: "center",
-      padding: "60px 20px",
-      color: "#6c757d",
+      textAlign: "center", padding: "80px 20px",
+    },
+    initialSpinner: {
+      height: "60px", width: "60px", margin: "0 auto 20px auto",
+      border: "6px solid #e2e8f0", borderTopColor: "#023E8A",
+      borderRadius: "50%", animation: "spin 1.2s linear infinite",
+    },
+    buttonSpinner: {
+      height: "20px", width: "20px",
+      border: "3px solid rgba(255,255,255,0.4)", borderTopColor: "#fff",
+      borderRadius: "50%", animation: "spin 1s linear infinite",
     },
     loadingText: {
-      fontSize: "1.2rem",
-      fontWeight: "500",
-    },
-    noProducts: {
-      textAlign: "center",
-      padding: "40px 20px",
-      color: "#6c757d",
-      fontSize: "1rem",
-    },
-    shipmentIdPreview: {
-      backgroundColor: "#f8f9fa",
-      padding: "10px 15px",
-      borderRadius: "6px",
-      border: "1px solid #e9ecef",
-      fontSize: "0.9rem",
-      color: "#495057",
-      fontFamily: "monospace",
-      marginTop: "10px",
+      color: "#64748b", fontSize: "1.2rem", fontWeight: "500"
     },
   };
+
+  const styleSheet = `
+    @media (max-width: 1024px) {
+      .form-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .products-grid::-webkit-scrollbar { width: 8px; }
+    .products-grid::-webkit-scrollbar-track { background: #f1f5f9; }
+    .products-grid::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    .products-grid::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    
+    input:focus, select:focus, input:focus-visible, select:focus-visible {
+      border-color: #023E8A !important;
+      box-shadow: 0 0 0 3px rgba(2, 62, 138, 0.1) !important;
+      outline: none;
+    }
+    
+    button:not(:disabled):hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(2, 62, 138, 0.4);
+    }
+    
+    button:not(:disabled):active {
+      transform: translateY(0);
+    }
+  `;
 
   if (fetchLoading) {
     return (
       <div style={styles.container}>
+        <style>{styleSheet}</style>
         <div style={styles.loadingContainer}>
-          <div style={{...styles.loadingSpinner, width: "50px", height: "50px", border: "4px solid #f3f3f3", borderTop: "4px solid #023E8A", margin: "0 auto 20px auto"}}></div>
-          <div style={styles.loadingText}>Loading products...</div>
-          <style>
-            {`
-              @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-              }
-            `}
-          </style>
+          <div style={styles.initialSpinner}></div>
+          <div style={styles.loadingText}>Loading Products...</div>
         </div>
       </div>
     );
@@ -393,186 +271,96 @@ const CreateShipment = () => {
 
   return (
     <div style={styles.container}>
+      <style>{styleSheet}</style>
       <div style={styles.header}>
-        <h1 style={styles.title}>Create Shipment</h1>
-        <p style={styles.subtitle}>Prepare products for shipping with selected carrier</p>
+        <h1 style={styles.title}>Create New Shipment</h1>
+        <p style={styles.subtitle}>Select products and a carrier to generate a new shipment</p>
       </div>
 
-      <div style={styles.formContainer}>
-        {error && (
-          <div style={styles.errorMessage}>
-            <strong>Error:</strong> {error}
-          </div>
-        )}
-
-        {success && (
-          <div style={styles.successMessage}>
-            <strong>Success:</strong> Shipment created successfully!
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} style={styles.form}>
-          {/* Carrier Selection */}
-          <div style={styles.formSection}>
-            <h3 style={styles.sectionTitle}>Shipping Information</h3>
+      <div className="form-layout" style={styles.formLayout}>
+        <div style={{ ...styles.formContainer, ...(animateIn && styles.animateIn) }}>
+          <form onSubmit={handleSubmit} style={styles.form}>
+            {error && <div style={{ ...styles.message, ...styles.errorMessage }}>{error}</div>}
+            {success && <div style={{ ...styles.message, ...styles.successMessage }}>Shipment created successfully!</div>}
+            
             <div style={styles.formGroup}>
-              <label style={styles.label}>Select Carrier</label>
-              <select
-                value={carrier}
-                onChange={(e) => setCarrier(e.target.value)}
-                style={styles.select}
-                onFocus={(e) => {
-                  e.target.style.borderColor = styles.selectFocus.borderColor;
-                  e.target.style.boxShadow = styles.selectFocus.boxShadow;
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = styles.select.borderColor;
-                  e.target.style.boxShadow = "none";
-                }}
-                required
-              >
-                <option value="">Choose a shipping carrier</option>
-                {carriers.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
+              <h3 style={styles.sectionTitle}>1. Shipping Details</h3>
+              <label htmlFor="carrier" style={styles.label}>Shipping Carrier</label>
+              <select id="carrier" value={carrier} onChange={(e) => setCarrier(e.target.value)} style={styles.select} required>
+                <option value="">-- Select a Carrier --</option>
+                {carriers.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
-              <div style={styles.shipmentIdPreview}>
-                Shipment ID will be: SHIP-{Date.now()}
-              </div>
             </div>
-          </div>
 
-          {/* Product Selection */}
-          <div style={styles.formSection}>
-            <h3 style={styles.sectionTitle}>Select Products</h3>
-            {products.length === 0 ? (
-              <div style={styles.noProducts}>
-                No products available for shipment
-              </div>
-            ) : (
-              <div style={styles.productsGrid}>
+            <div style={styles.formGroup}>
+              <h3 style={styles.sectionTitle}>2. Select Products</h3>
+              <div className="products-grid" style={styles.productsGrid}>
                 {products.map((product) => {
                   const isSelected = selectedProducts.some(sp => sp.product === product._id);
                   const selectedProduct = selectedProducts.find(sp => sp.product === product._id);
-                  
                   return (
-                    <div
-                      key={product._id}
-                      style={{
-                        ...styles.productCard,
-                        ...(isSelected ? styles.productCardSelected : {})
-                      }}
-                    >
-                      <div style={styles.productHeader}>
-                        <input
-                          type="checkbox"
-                          id={product._id}
-                          checked={isSelected}
-                          onChange={() => handleProductToggle(product._id)}
-                          style={styles.checkbox}
-                        />
-                        <label htmlFor={product._id} style={styles.productName}>
-                          {product.productName}
-                        </label>
-                      </div>
-                      
+                    <div key={product._id} style={{ ...styles.productCard, ...(isSelected && styles.productCardSelected) }}>
+                      <label htmlFor={product._id} style={styles.productHeader}>
+                        <input type="checkbox" id={product._id} checked={isSelected} onChange={() => handleProductToggle(product._id)} style={styles.checkbox} />
+                        <span style={styles.productName}>{product.productName}</span>
+                      </label>
                       <div style={styles.productInfo}>
-                        <div><strong>ID:</strong> {product.productID}</div>
-                        <div><strong>Available:</strong> {product.quantity} units</div>
-                        <div><strong>Model:</strong> {product.modelName}</div>
+                        <strong>ID:</strong> {product.productID}<br />
+                        <strong>Available:</strong> {product.quantity} units
                       </div>
-
                       {isSelected && (
                         <div style={styles.quantityContainer}>
-                          <span style={styles.quantityLabel}>Quantity:</span>
-                          <input
-                            type="number"
-                            min="1"
-                            value={selectedProduct?.quantity || 1}
-                            onChange={(e) => handleProductChange(product._id, e.target.value)}
-                            style={styles.quantityInput}
-                          />
+                          <label style={styles.label}>Quantity:</label>
+                          <input type="number" min="1" max={product.quantity} value={selectedProduct?.quantity || 1} onChange={(e) => handleProductChange(product._id, e.target.value)} style={styles.quantityInput} />
                         </div>
                       )}
                     </div>
                   );
                 })}
               </div>
-            )}
-          </div>
-
-          {/* Summary */}
-          {selectedProducts.length > 0 && (
-            <div style={styles.summarySection}>
-              <h3 style={styles.sectionTitle}>Shipment Summary</h3>
-              
-              <div style={styles.summaryGrid}>
-                <div style={styles.summaryCard}>
-                  <div style={styles.summaryNumber}>{selectedProducts.length}</div>
-                  <div style={styles.summaryLabel}>Products</div>
-                </div>
-                <div style={styles.summaryCard}>
-                  <div style={styles.summaryNumber}>{getTotalItems()}</div>
-                  <div style={styles.summaryLabel}>Total Items</div>
-                </div>
-                <div style={styles.summaryCard}>
-                  <div style={styles.summaryNumber}>{carrier || "---"}</div>
-                  <div style={styles.summaryLabel}>Carrier</div>
-                </div>
-              </div>
-
-              <div style={styles.selectedProductsList}>
-                <div style={styles.selectedProductsTitle}>Selected Products:</div>
-                {selectedProducts.map((sp) => {
-                  const productDetail = getSelectedProductDetails(sp.product);
-                  return (
-                    <div key={sp.product} style={styles.selectedProductItem}>
-                      <strong>{productDetail?.productName}</strong> - {sp.quantity} units
-                    </div>
-                  );
-                })}
-              </div>
             </div>
-          )}
+          </form>
+        </div>
 
-          <button
-            type="submit"
-            disabled={loading || !carrier || selectedProducts.length === 0}
-            style={{
-              ...styles.button,
-              ...(loading || !carrier || selectedProducts.length === 0 ? styles.buttonDisabled : {})
-            }}
-            onMouseEnter={(e) => {
-              if (!loading && carrier && selectedProducts.length > 0) {
-                e.target.style.backgroundColor = styles.buttonHover.backgroundColor;
-                e.target.style.transform = styles.buttonHover.transform;
-                e.target.style.boxShadow = styles.buttonHover.boxShadow;
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!loading) {
-                e.target.style.backgroundColor = styles.button.backgroundColor;
-                e.target.style.transform = "none";
-                e.target.style.boxShadow = "none";
-              }
-            }}
-          >
-            {loading && <span style={styles.loadingSpinner}></span>}
-            {loading ? "Creating Shipment..." : "Create Shipment"}
+        <div style={{ ...styles.summaryContainer, ...(animateIn && styles.animateIn) }}>
+          <h3 style={styles.sectionTitle}>Summary</h3>
+          <div style={{ display: 'grid', gap: '20px' }}>
+            <div style={styles.summaryCard}>
+              <div style={styles.summaryValue}>{selectedProducts.length}</div>
+              <div style={styles.summaryLabel}>Unique Products</div>
+            </div>
+            <div style={styles.summaryCard}>
+              <div style={styles.summaryValue}>{getTotalItems()}</div>
+              <div style={styles.summaryLabel}>Total Items</div>
+            </div>
+            <div style={styles.summaryCard}>
+              <div style={styles.summaryLabel}>Carrier</div>
+              <div style={{ ...styles.summaryValue, fontSize: "1.8rem", marginTop: "5px" }}>{carrier || "..."}</div>
+            </div>
+          </div>
+          
+          <h4 style={{ ...styles.sectionTitle, fontSize: "1.1rem", marginTop: "30px", marginBottom: "15px" }}>Selected Items</h4>
+          <ul style={styles.selectedProductsList}>
+            {selectedProducts.length > 0 ? selectedProducts.map((sp) => {
+              const details = getSelectedProductDetails(sp.product);
+              return (
+                <li key={sp.product} style={styles.selectedProductItem}>
+                  <span>{details?.productName}</span>
+                  <strong>x {sp.quantity}</strong>
+                </li>
+              );
+            }) : <li style={{ ...styles.selectedProductItem, border: "none", color: "#94a3b8" }}>No products selected</li>}
+          </ul>
+          
+          <button type="submit" onClick={handleSubmit} disabled={loading || !carrier || selectedProducts.length === 0} style={{ ...styles.button, ...((loading || !carrier || selectedProducts.length === 0) && styles.buttonDisabled) }}>
+            {loading && <div style={styles.buttonSpinner}></div>}
+            {loading ? "Creating..." : "Create Shipment"}
           </button>
-        </form>
+        </div>
       </div>
-
-      <style>
-        {`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `}
-      </style>
     </div>
   );
 };
 
 export default CreateShipment;
+

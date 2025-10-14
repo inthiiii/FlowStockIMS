@@ -12,11 +12,11 @@ const DeliveryUpdatePage = () => {
   const [success, setSuccess] = useState(false);
 
   const statuses = [
-    { value: "Pending", label: "Pending", color: "#6c757d" },
-    { value: "Shipped", label: "Shipped", color: "#ffc107" },
-    { value: "In-Transit", label: "In Transit", color: "#17a2b8" },
-    { value: "Delivered", label: "Delivered", color: "#28a745" },
-    { value: "Cancelled", label: "Cancelled", color: "#dc3545" }
+    { value: "Pending", label: "Pending" },
+    { value: "Shipped", label: "Shipped" },
+    { value: "In-Transit", label: "In Transit" },
+    { value: "Delivered", label: "Delivered" },
+    { value: "Cancelled", label: "Cancelled" },
   ];
 
   useEffect(() => {
@@ -28,7 +28,6 @@ const DeliveryUpdatePage = () => {
         if (!res.ok) throw new Error(data.message || "Failed to fetch delivery");
         setDelivery(data);
         setStatus(data.status || "Pending");
-        setError("");
       } catch (err) {
         setError(err.message);
       } finally {
@@ -41,6 +40,7 @@ const DeliveryUpdatePage = () => {
   const handleUpdate = async () => {
     setUpdating(true);
     setError("");
+    setSuccess(false);
     try {
       const res = await fetch(`http://localhost:3000/api/deliveries/${id}`, {
         method: "PUT",
@@ -50,9 +50,7 @@ const DeliveryUpdatePage = () => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to update delivery");
       setSuccess(true);
-      setTimeout(() => {
-        navigate("/deliveries/list");
-      }, 1500);
+      setTimeout(() => navigate("/deliveries/list"), 1500);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -60,435 +58,234 @@ const DeliveryUpdatePage = () => {
     }
   };
 
-  const getStatusColor = (statusValue) => {
-    const statusObj = statuses.find(s => s.value === statusValue);
-    return statusObj ? statusObj.color : "#6c757d";
+  const getStatusStyle = (statusValue) => {
+    switch (statusValue?.toLowerCase()) {
+      case 'delivered': return { bg: '#dcfce7', text: '#166534' };
+      case 'in-transit':
+      case 'shipped': return { bg: '#fefce8', text: '#854d0e' };
+      case 'cancelled': return { bg: '#fee2e2', text: '#991b1b' };
+      case 'pending':
+      default: return { bg: '#f1f5f9', text: '#334155' };
+    }
   };
-
+  
   const styles = {
     container: {
-      maxWidth: "800px",
+      maxWidth: "900px",
       margin: "0 auto",
-      padding: "40px 20px",
-      backgroundColor: "#ffffff",
+      padding: "50px 30px",
+      background: "linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%)",
       minHeight: "100vh",
-      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-    },
-    backButton: {
-      backgroundColor: "#6c757d",
-      color: "#ffffff",
-      padding: "10px 20px",
-      border: "none",
-      borderRadius: "6px",
-      fontSize: "0.9rem",
-      fontWeight: "500",
-      cursor: "pointer",
-      transition: "all 0.3s ease",
-      marginBottom: "30px",
-    },
-    backButtonHover: {
-      backgroundColor: "#5a6268",
+      fontFamily: "'Inter', sans-serif",
     },
     header: {
       textAlign: "center",
-      marginBottom: "40px",
+      marginBottom: "30px",
+      animation: "fadeInDown 0.6s ease-out",
     },
     title: {
       color: "#023E8A",
-      fontSize: "2.5rem",
-      fontWeight: "600",
-      margin: "0",
-      marginBottom: "10px",
+      fontSize: "2.8rem",
+      fontWeight: "700",
+      margin: "0 0 12px 0",
     },
     subtitle: {
-      color: "#6c757d",
-      fontSize: "1.1rem",
-      margin: "0",
-      fontWeight: "400",
+      color: "#64748b",
+      fontSize: "1.15rem",
+    },
+    backButton: {
+      background: "#ffffff",
+      color: "#475569",
+      padding: "10px 20px",
+      border: "1px solid #e2e8f0",
+      borderRadius: "10px",
+      fontSize: "0.9rem",
+      fontWeight: "600",
+      cursor: "pointer",
+      textDecoration: "none",
+      display: "inline-block",
+      marginBottom: "20px",
     },
     contentContainer: {
-      backgroundColor: "#f8f9fa",
+      backgroundColor: "#ffffff",
       padding: "40px",
-      borderRadius: "12px",
-      boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-      border: "1px solid #e9ecef",
+      borderRadius: "20px",
+      boxShadow: "0 20px 60px rgba(0, 0, 0, 0.08)",
+      border: "1px solid #e2e8f0",
+      animation: "fadeInUp 0.8s ease-out",
     },
     section: {
-      backgroundColor: "#ffffff",
-      padding: "25px",
-      borderRadius: "10px",
-      marginBottom: "25px",
-      border: "1px solid #e9ecef",
-      boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
+      marginBottom: "30px",
     },
     sectionTitle: {
       color: "#023E8A",
-      fontSize: "1.3rem",
+      fontSize: "1.25rem",
       fontWeight: "600",
+      paddingBottom: "12px",
+      borderBottom: "1px solid #e2e8f0",
       marginBottom: "20px",
-      paddingBottom: "10px",
-      borderBottom: "2px solid #e9ecef",
     },
     infoGrid: {
       display: "grid",
-      gridTemplateColumns: "1fr",
-      gap: "15px",
+      gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+      gap: "20px",
     },
-    infoRow: {
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      padding: "12px 15px",
-      backgroundColor: "#f8f9fa",
-      borderRadius: "8px",
-      border: "1px solid #e9ecef",
+    infoItem: {
+      background: "#f8fafc",
+      padding: "15px",
+      borderRadius: "10px",
+      border: "1px solid #e2e8f0",
     },
     infoLabel: {
-      fontSize: "0.95rem",
-      fontWeight: "600",
-      color: "#023E8A",
-      textTransform: "uppercase",
-      letterSpacing: "0.5px",
+      fontSize: "0.875rem",
+      fontWeight: "500",
+      color: "#64748b",
+      marginBottom: "6px",
+      display: "block",
     },
     infoValue: {
       fontSize: "1rem",
-      fontWeight: "500",
-      color: "#495057",
-      textAlign: "right",
+      fontWeight: "600",
+      color: "#1e293b",
     },
     saleId: {
       fontFamily: "monospace",
-      backgroundColor: "#ffffff",
-      padding: "4px 8px",
-      borderRadius: "4px",
-      border: "1px solid #e9ecef",
-      fontSize: "0.9rem",
     },
-    statusSection: {
-      backgroundColor: "#ffffff",
-      padding: "25px",
-      borderRadius: "10px",
-      border: "1px solid #e9ecef",
-      boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
-      marginBottom: "25px",
-    },
-    currentStatusBadge: {
-      padding: "8px 16px",
+    statusBadge: {
+      padding: "6px 14px",
       borderRadius: "20px",
-      fontSize: "0.95rem",
+      fontSize: "0.8rem",
       fontWeight: "600",
       textTransform: "uppercase",
       letterSpacing: "0.5px",
-      color: "#ffffff",
       display: "inline-block",
-      marginBottom: "20px",
     },
     formGroup: {
       display: "flex",
       flexDirection: "column",
-      gap: "10px",
-    },
-    label: {
-      color: "#023E8A",
-      fontSize: "1rem",
-      fontWeight: "600",
-      textTransform: "uppercase",
-      letterSpacing: "0.5px",
+      gap: "8px",
     },
     select: {
-      padding: "12px 16px",
-      border: "2px solid #e9ecef",
-      borderRadius: "8px",
+      padding: "14px 18px",
+      border: "2px solid #e2e8f0",
+      borderRadius: "10px",
       fontSize: "1rem",
-      fontFamily: "inherit",
-      transition: "all 0.3s ease",
-      backgroundColor: "#ffffff",
-      outline: "none",
       cursor: "pointer",
-    },
-    selectFocus: {
-      borderColor: "#023E8A",
-      boxShadow: "0 0 0 3px rgba(2, 62, 138, 0.1)",
+      appearance: "none",
+      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23023E8A' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
+      backgroundRepeat: "no-repeat",
+      backgroundPosition: "right 18px center",
     },
     buttonContainer: {
       display: "flex",
-      justifyContent: "center",
+      justifyContent: "flex-end",
       gap: "15px",
       marginTop: "30px",
+      paddingTop: "20px",
+      borderTop: "1px solid #e2e8f0",
     },
-    updateButton: {
-      backgroundColor: "#023E8A",
-      color: "#ffffff",
-      padding: "15px 30px",
+    actionButton: {
+      padding: "12px 28px",
       border: "none",
-      borderRadius: "8px",
-      fontSize: "1.1rem",
+      borderRadius: "10px",
+      fontSize: "1rem",
       fontWeight: "600",
       cursor: "pointer",
       transition: "all 0.3s ease",
-      textTransform: "uppercase",
-      letterSpacing: "0.5px",
-      minWidth: "180px",
     },
-    updateButtonHover: {
-      backgroundColor: "#012a5c",
-      transform: "translateY(-2px)",
-      boxShadow: "0 4px 12px rgba(2, 62, 138, 0.3)",
-    },
-    updateButtonDisabled: {
-      backgroundColor: "#6c757d",
-      cursor: "not-allowed",
-      transform: "none",
-      boxShadow: "none",
-    },
-    cancelButton: {
-      backgroundColor: "#6c757d",
-      color: "#ffffff",
-      padding: "15px 30px",
-      border: "none",
-      borderRadius: "8px",
-      fontSize: "1.1rem",
-      fontWeight: "600",
-      cursor: "pointer",
-      transition: "all 0.3s ease",
-      textTransform: "uppercase",
-      letterSpacing: "0.5px",
-      minWidth: "180px",
-    },
-    cancelButtonHover: {
-      backgroundColor: "#5a6268",
+    message: {
+      padding: "15px",
+      marginBottom: "20px",
+      borderRadius: "10px",
+      textAlign: "center",
+      fontWeight: "500",
+      border: "1px solid transparent",
     },
     loadingContainer: {
       textAlign: "center",
-      padding: "80px 20px",
-      color: "#6c757d",
-    },
-    loadingSpinner: {
-      width: "50px",
-      height: "50px",
-      border: "4px solid #f3f3f3",
-      borderTop: "4px solid #023E8A",
-      borderRadius: "50%",
-      animation: "spin 1s linear infinite",
-      marginBottom: "20px",
-      margin: "0 auto 20px auto",
-    },
-    loadingText: {
+      padding: "120px 20px",
+      color: "#64748b",
       fontSize: "1.2rem",
-      fontWeight: "500",
-    },
-    buttonSpinner: {
-      display: "inline-block",
-      width: "20px",
-      height: "20px",
-      border: "2px solid #ffffff",
-      borderTop: "2px solid transparent",
-      borderRadius: "50%",
-      animation: "spin 1s linear infinite",
-      marginRight: "10px",
-    },
-    errorMessage: {
-      backgroundColor: "#f8d7da",
-      color: "#721c24",
-      padding: "12px 16px",
-      borderRadius: "8px",
-      border: "1px solid #f5c6cb",
-      fontSize: "0.95rem",
-      fontWeight: "500",
-      marginBottom: "20px",
-      textAlign: "center",
-    },
-    successMessage: {
-      backgroundColor: "#d1edff",
-      color: "#0c5460",
-      padding: "12px 16px",
-      borderRadius: "8px",
-      border: "1px solid #bee5eb",
-      fontSize: "0.95rem",
-      fontWeight: "500",
-      marginBottom: "20px",
-      textAlign: "center",
-    },
-    partnerBadge: {
-      backgroundColor: "#e3f2fd",
-      color: "#1976d2",
-      padding: "4px 10px",
-      borderRadius: "12px",
-      fontSize: "0.9rem",
-      fontWeight: "500",
-      display: "inline-block",
     },
   };
 
-  if (loading) {
-    return (
-      <div style={styles.container}>
-        <div style={styles.loadingContainer}>
-          <div style={styles.loadingSpinner}></div>
-          <div style={styles.loadingText}>Loading delivery details...</div>
-          <style>
-            {`
-              @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-              }
-            `}
-          </style>
-        </div>
-      </div>
-    );
-  }
+  const styleSheet = `
+    @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    select:focus { border-color: #023E8A !important; box-shadow: 0 0 0 3px rgba(2, 62, 138, 0.1) !important; outline: none; }
+    button:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); }
+    button:active:not(:disabled) { transform: translateY(-1px); }
+  `;
 
-  if (error && !delivery) {
-    return (
-      <div style={styles.container}>
-        <button 
-          style={styles.backButton}
-          onClick={() => navigate("/deliveries/list")}
-          onMouseEnter={(e) => {
-            e.target.style.backgroundColor = styles.backButtonHover.backgroundColor;
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.backgroundColor = styles.backButton.backgroundColor;
-          }}
-        >
-          ← Back to Deliveries
-        </button>
-        <div style={styles.errorMessage}>
-          <strong>Error:</strong> {error}
-        </div>
-      </div>
-    );
+  if (loading) {
+    return <div style={styles.loadingContainer}>Loading Delivery Details...</div>;
   }
+  
+  const currentStatusStyle = getStatusStyle(delivery?.status);
 
   return (
     <div style={styles.container}>
-      <button 
-        style={styles.backButton}
-        onClick={() => navigate("/deliveries/list")}
-        onMouseEnter={(e) => {
-          e.target.style.backgroundColor = styles.backButtonHover.backgroundColor;
-        }}
-        onMouseLeave={(e) => {
-          e.target.style.backgroundColor = styles.backButton.backgroundColor;
-        }}
-      >
+      <style>{styleSheet}</style>
+      <button style={styles.backButton} onClick={() => navigate("/deliveries/list")}>
         ← Back to Deliveries
       </button>
 
       <div style={styles.header}>
         <h1 style={styles.title}>Update Delivery Status</h1>
-        <p style={styles.subtitle}>Modify delivery tracking and status information</p>
+        <p style={styles.subtitle}>Manage and track the delivery process for a sale.</p>
       </div>
 
       <div style={styles.contentContainer}>
-        {error && (
-          <div style={styles.errorMessage}>
-            <strong>Error:</strong> {error}
-          </div>
-        )}
+        {error && <div style={{...styles.message, backgroundColor: "#fee2e2", color: "#991b1b", borderColor: "#fecaca"}}>{error}</div>}
+        {success && <div style={{...styles.message, backgroundColor: "#dcfce7", color: "#166534", borderColor: "#bbf7d0"}}>Delivery updated! Redirecting...</div>}
 
-        {success && (
-          <div style={styles.successMessage}>
-            <strong>Success:</strong> Delivery updated successfully! Redirecting...
-          </div>
-        )}
-
-        {/* Delivery Information */}
         <div style={styles.section}>
-          <h3 style={styles.sectionTitle}>Delivery Information</h3>
+          <h2 style={styles.sectionTitle}>Delivery Information</h2>
           <div style={styles.infoGrid}>
-            <div style={styles.infoRow}>
+            <div style={styles.infoItem}>
               <span style={styles.infoLabel}>Sale ID</span>
-              <span style={{...styles.infoValue, ...styles.saleId}}>
-                {delivery?.sale?._id || 'N/A'}
-              </span>
+              <span style={{...styles.infoValue, ...styles.saleId}}>{delivery?.sale?._id || 'N/A'}</span>
             </div>
-            <div style={styles.infoRow}>
-              <span style={styles.infoLabel}>Customer Name</span>
-              <span style={styles.infoValue}>
-                {delivery?.sale?.customerName || 'N/A'}
-              </span>
+            <div style={styles.infoItem}>
+              <span style={styles.infoLabel}>Customer</span>
+              <span style={styles.infoValue}>{delivery?.sale?.customerName || 'N/A'}</span>
             </div>
-            <div style={styles.infoRow}>
+            <div style={styles.infoItem}>
               <span style={styles.infoLabel}>Product</span>
-              <span style={styles.infoValue}>
-                {delivery?.sale?.product?.name || delivery?.sale?.product?.productName || 'N/A'}
-              </span>
+              <span style={styles.infoValue}>{delivery?.sale?.product?.productName || 'N/A'}</span>
             </div>
-            <div style={styles.infoRow}>
-              <span style={styles.infoLabel}>Delivery Partner</span>
-              <span style={styles.partnerBadge}>
-                {delivery?.partner || 'N/A'}
-              </span>
+            <div style={styles.infoItem}>
+              <span style={styles.infoLabel}>Partner</span>
+              <span style={styles.infoValue}>{delivery?.partner || 'N/A'}</span>
             </div>
-            {delivery?.createdAt && (
-              <div style={styles.infoRow}>
-                <span style={styles.infoLabel}>Created Date</span>
-                <span style={styles.infoValue}>
-                  {new Date(delivery.createdAt).toLocaleDateString()}
-                </span>
-              </div>
-            )}
           </div>
         </div>
 
-        {/* Status Update Section */}
-        <div style={styles.statusSection}>
-          <h3 style={styles.sectionTitle}>Status Management</h3>
-          
-          <div>
-            <div style={styles.label}>Current Status</div>
-            <span 
-              style={{
-                ...styles.currentStatusBadge,
-                backgroundColor: getStatusColor(delivery?.status)
-              }}
-            >
-              {delivery?.status || 'Pending'}
-            </span>
-          </div>
-
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Update Status</label>
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              style={styles.select}
-              onFocus={(e) => {
-                e.target.style.borderColor = styles.selectFocus.borderColor;
-                e.target.style.boxShadow = styles.selectFocus.boxShadow;
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = styles.select.borderColor;
-                e.target.style.boxShadow = "none";
-              }}
-              disabled={updating}
-            >
-              {statuses.map((s) => (
-                <option key={s.value} value={s.value}>
-                  {s.label}
-                </option>
-              ))}
-            </select>
+        <div style={styles.section}>
+          <h2 style={styles.sectionTitle}>Status Management</h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
+            <div>
+              <span style={styles.infoLabel}>Current Status</span>
+              <span style={{...styles.statusBadge, backgroundColor: currentStatusStyle.bg, color: currentStatusStyle.text}}>
+                {delivery?.status || 'Pending'}
+              </span>
+            </div>
+            <div style={{...styles.formGroup, flex: '1', minWidth: '250px'}}>
+              <label style={styles.infoLabel}>Change Status To</label>
+              <select value={status} onChange={(e) => setStatus(e.target.value)} style={styles.select} disabled={updating}>
+                {statuses.map((s) => (
+                  <option key={s.value} value={s.value}>{s.label}</option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
-
-        {/* Action Buttons */}
+        
         <div style={styles.buttonContainer}>
           <button
             onClick={() => navigate("/deliveries/list")}
-            style={styles.cancelButton}
-            onMouseEnter={(e) => {
-              if (!updating) {
-                e.target.style.backgroundColor = styles.cancelButtonHover.backgroundColor;
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!updating) {
-                e.target.style.backgroundColor = styles.cancelButton.backgroundColor;
-              }
-            }}
+            style={{...styles.actionButton, background: '#f1f5f9', color: '#475569' }}
             disabled={updating}
           >
             Cancel
@@ -496,39 +293,17 @@ const DeliveryUpdatePage = () => {
           <button
             onClick={handleUpdate}
             style={{
-              ...styles.updateButton,
-              ...(updating ? styles.updateButtonDisabled : {})
-            }}
-            onMouseEnter={(e) => {
-              if (!updating) {
-                e.target.style.backgroundColor = styles.updateButtonHover.backgroundColor;
-                e.target.style.transform = styles.updateButtonHover.transform;
-                e.target.style.boxShadow = styles.updateButtonHover.boxShadow;
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!updating) {
-                e.target.style.backgroundColor = styles.updateButton.backgroundColor;
-                e.target.style.transform = "none";
-                e.target.style.boxShadow = "none";
-              }
+              ...styles.actionButton, 
+              background: 'linear-gradient(135deg, #023E8A 0%, #0353b8 100%)',
+              color: '#ffffff',
+              ...(updating && { background: '#94a3b8', cursor: 'not-allowed' })
             }}
             disabled={updating}
           >
-            {updating && <span style={styles.buttonSpinner}></span>}
             {updating ? "Updating..." : "Update Delivery"}
           </button>
         </div>
       </div>
-
-      <style>
-        {`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `}
-      </style>
     </div>
   );
 };

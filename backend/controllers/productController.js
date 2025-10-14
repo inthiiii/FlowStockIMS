@@ -1,7 +1,38 @@
 import Product from "../models/productModel.js";
+import nodemailer from "nodemailer";
+import PDFDocument from "pdfkit";
+import fs from "fs";
+import path from "path";
 
-// @desc Get all products
-// @route GET /api/products
+// ------------------ Helper Email Function ------------------
+const sendReorderEmail = async (product) => {
+  try {
+    if (product.quantity <= product.reOrderLevel) {
+      const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS,
+        },
+      });
+
+      await transporter.sendMail({
+        from: process.env.EMAIL_USER,
+        to: process.env.EMAIL_USER, // you can change to dynamic email
+        subject: `Reorder Alert: ${product.productName}`,
+        html: `<p>The product <strong>${product.productName}</strong> has reached its reorder level.</p>
+               <p>Current stock: ${product.quantity}</p>
+               <p>Reorder level: ${product.reOrderLevel}</p>`,
+      });
+    }
+  } catch (err) {
+    console.error("Error sending reorder email:", err.message);
+  }
+};
+
+// ------------------ Controllers ------------------
+
+// Get all products
 export const getProducts = async (req, res) => {
   try {
     const products = await Product.find();
@@ -11,13 +42,21 @@ export const getProducts = async (req, res) => {
   }
 };
 
-// @desc Create a product
-// @route POST /api/products
+// Get favorite products
+export const getFavoriteProducts = async (_req, res) => {
+  try {
+    const favorites = await Product.find({ favorite: true });
+    res.json(favorites);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Create a product
 export const createProduct = async (req, res) => {
   try {
     const { productName, productID, description, quantity, reOrderLevel, modelName } = req.body;
 
-    // Convert numbers (multer gives strings)
     const qty = Number(quantity);
     const reorder = Number(reOrderLevel);
 
@@ -36,6 +75,10 @@ export const createProduct = async (req, res) => {
     });
 
     const createdProduct = await product.save();
+
+    // Send reorder email if needed
+    await sendReorderEmail(createdProduct);
+
     res.status(201).json(createdProduct);
   } catch (error) {
     console.error("❌ Error creating product:", error.message);
@@ -43,8 +86,7 @@ export const createProduct = async (req, res) => {
   }
 };
 
-// @desc Get single product
-// @route GET /api/products/:id
+// Get single product
 export const getProductById = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
@@ -55,8 +97,7 @@ export const getProductById = async (req, res) => {
   }
 };
 
-// @desc Update product
-// @route PUT /api/products/:id
+// Update product
 export const updateProduct = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
@@ -68,12 +109,15 @@ export const updateProduct = async (req, res) => {
       product.quantity = req.body.quantity ? Number(req.body.quantity) : product.quantity;
       product.reOrderLevel = req.body.reOrderLevel ? Number(req.body.reOrderLevel) : product.reOrderLevel;
       product.modelName = req.body.modelName || product.modelName;
+      product.favorite = req.body.favorite !== undefined ? req.body.favorite : product.favorite;
 
-      if (req.file) {
-        product.image = `/uploads/${req.file.filename}`;
-      }
-      
+      if (req.file) product.image = `/uploads/${req.file.filename}`;
+
       const updatedProduct = await product.save();
+
+      // Send reorder email if stock is below level
+      await sendReorderEmail(updatedProduct);
+
       res.json(updatedProduct);
     } else {
       res.status(404).json({ message: "Product not found" });
@@ -83,18 +127,42 @@ export const updateProduct = async (req, res) => {
   }
 };
 
-// @desc Delete product
-// @route DELETE /api/products/:id
+// Delete product
 export const deleteProduct = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
-
     if (product) {
       await product.deleteOne();
       res.json({ message: "Product removed" });
     } else {
       res.status(404).json({ message: "Product not found" });
     }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Export products to PDF
+export const exportProductsPDF = async (_req, res) => {
+  try {
+    const products = await Product.find();
+
+    const doc = new PDFDocument();
+    const filePath = path.join("uploads", "products.pdf");
+    doc.pipe(fs.createWriteStream(filePath));
+
+    doc.fontSize(20).text("Product List", { align: "center" });
+    doc.moveDown();
+
+    products.forEach((p, i) => {
+      doc.fontSize(12).text(`${i + 1}. ${p.productName} - ${p.productID} - Qty: ${p.quantity}`);
+    });
+
+    doc.end();
+
+    doc.on("finish", () => {
+      res.download(filePath, "products.pdf");
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

@@ -1,8 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const HomePage = () => {
   const navigate = useNavigate();
+  const [hoveredProduct, setHoveredProduct] = useState(null);
+  const [hoveredHighlight, setHoveredHighlight] = useState(null);
 
   // Hardcoded products
   const topProducts = [
@@ -20,333 +22,365 @@ const HomePage = () => {
     { id: 3, name: "Samantha Jayasinghe", feedback: "Friendly staff and genuine parts. I trust them completely.", rating: 5 },
   ];
 
+  const highlights = [
+    "Wide range of genuine and aftermarket spare parts",
+    "Nationwide delivery with trusted logistics",
+    "Competitive pricing and seasonal offers",
+    "Experienced team with years of industry expertise",
+    "Customer-first service with dedicated support"
+  ];
+
   const styles = {
     container: {
-      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-      color: "#333",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      color: "#1a1a2e",
       lineHeight: "1.6",
       margin: "0",
       padding: "0",
+      background: "#ffffff",
     },
-    
+
     // Hero Section
     heroSection: {
-      background: "linear-gradient(135deg, #023E8A 0%, #0056b3 100%)",
+      background: "linear-gradient(135deg, #023E8A 0%, #0077B6 50%, #00B4D8 100%)",
       color: "#ffffff",
-      padding: "120px 20px",
+      padding: "140px 20px 120px",
       textAlign: "center",
       position: "relative",
       overflow: "hidden",
+      backgroundSize: "200% 200%",
+    },
+    heroDecoration: {
+      position: "absolute",
+      width: "500px",
+      height: "500px",
+      borderRadius: "50%",
+      background: "rgba(255, 255, 255, 0.1)",
+      filter: "blur(100px)",
+    },
+    heroDecorationTop: {
+      top: "-200px",
+      right: "-100px",
+    },
+    heroDecorationBottom: {
+      bottom: "-200px",
+      left: "-100px",
     },
     heroContent: {
-      maxWidth: "900px",
+      maxWidth: "1000px",
       margin: "0 auto",
       position: "relative",
-      zIndex: "2",
+      zIndex: 2,
     },
     heroTitle: {
-      fontSize: "4rem",
-      fontWeight: "700",
-      marginBottom: "20px",
-      textShadow: "0 4px 8px rgba(0, 0, 0, 0.3)",
-      letterSpacing: "-1px",
+      fontSize: "4.5rem",
+      fontWeight: "900",
+      marginBottom: "24px",
+      textShadow: "0 4px 20px rgba(0, 0, 0, 0.3)",
+      letterSpacing: "-2px",
+      lineHeight: "1.1",
     },
     heroSubtitle: {
-      fontSize: "1.6rem",
-      marginBottom: "40px",
-      fontWeight: "300",
+      fontSize: "1.5rem",
+      marginBottom: "48px",
+      fontWeight: "400",
       opacity: "0.95",
-      lineHeight: "1.4",
+      lineHeight: "1.6",
+      maxWidth: "700px",
+      margin: "0 auto 48px",
     },
     heroButton: {
       background: "#ffffff",
       color: "#023E8A",
       border: "none",
-      padding: "18px 40px",
-      fontSize: "1.3rem",
-      fontWeight: "600",
+      padding: "20px 50px",
+      fontSize: "1.2rem",
+      fontWeight: "700",
       borderRadius: "50px",
       cursor: "pointer",
-      transition: "all 0.3s ease",
+      transition: "all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55)",
       textTransform: "uppercase",
-      letterSpacing: "1px",
-      boxShadow: "0 4px 15px rgba(255, 255, 255, 0.3)",
-    },
-    heroButtonHover: {
-      transform: "translateY(-3px)",
-      boxShadow: "0 6px 25px rgba(255, 255, 255, 0.4)",
-      background: "#f8f9fa",
+      letterSpacing: "2px",
+      boxShadow: "0 8px 30px rgba(255, 255, 255, 0.3)",
+      display: "inline-block",
     },
 
     // Section Styles
-    section: {
-      padding: "80px 20px",
-    },
-    sectionAlt: {
-      background: "#f8f9fa",
-    },
     sectionTitle: {
-      fontSize: "2.8rem",
-      fontWeight: "700",
+      fontSize: "3.2rem",
+      fontWeight: "800",
       color: "#023E8A",
       textAlign: "center",
-      marginBottom: "50px",
+      marginBottom: "20px",
       position: "relative",
-      paddingBottom: "20px",
+      letterSpacing: "-1px",
     },
-    sectionTitleUnderline: {
-      content: '""',
-      position: "absolute",
-      bottom: "0",
-      left: "50%",
-      transform: "translateX(-50%)",
-      width: "100px",
-      height: "4px",
-      background: "linear-gradient(90deg, #023E8A, #0056b3)",
-      borderRadius: "2px",
+    sectionSubtitle: {
+      fontSize: "1.2rem",
+      color: "#64748b",
+      textAlign: "center",
+      marginBottom: "60px",
+      maxWidth: "600px",
+      margin: "0 auto 60px",
+      fontWeight: "400",
     },
 
     // Highlights Section
     highlightSection: {
-      ...{ padding: "80px 20px" },
-      background: "#f8f9fa",
-      textAlign: "center",
+      padding: "100px 20px",
+      background: "linear-gradient(180deg, #f8fafc 0%, #e8f4f8 100%)",
+      position: "relative",
     },
     highlightList: {
       listStyle: "none",
       padding: "0",
       margin: "0",
       display: "grid",
-      gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-      gap: "25px",
-      maxWidth: "1000px",
+      gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+      gap: "30px",
+      maxWidth: "1200px",
       marginLeft: "auto",
       marginRight: "auto",
     },
     highlightItem: {
-      background: "#ffffff",
-      padding: "25px",
-      borderRadius: "15px",
-      boxShadow: "0 4px 15px rgba(0, 0, 0, 0.08)",
-      border: "1px solid #e9ecef",
+      background: "linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)",
+      padding: "32px",
+      borderRadius: "20px",
+      boxShadow: "0 4px 20px rgba(2, 62, 138, 0.08)",
+      border: "2px solid #e2e8f0",
       fontSize: "1.1rem",
       fontWeight: "500",
-      color: "#495057",
-      transition: "all 0.3s ease",
+      color: "#334155",
+      transition: "all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55)",
       display: "flex",
-      alignItems: "center",
+      alignItems: "flex-start",
       textAlign: "left",
-    },
-    highlightItemHover: {
-      transform: "translateY(-5px)",
-      boxShadow: "0 8px 30px rgba(2, 62, 138, 0.15)",
-      borderColor: "#023E8A",
+      position: "relative",
+      overflow: "hidden",
+      cursor: "default",
     },
     highlightIcon: {
-      color: "#28a745",
-      fontSize: "1.5rem",
-      marginRight: "15px",
+      fontSize: "1.8rem",
+      marginRight: "20px",
       fontWeight: "bold",
-      minWidth: "30px",
+      minWidth: "32px",
+      height: "32px",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      borderRadius: "50%",
+      background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+      color: "#ffffff",
+      flexShrink: 0,
     },
 
     // Products Section
     productSection: {
-      padding: "80px 20px",
+      padding: "100px 20px",
       textAlign: "center",
       background: "#ffffff",
     },
     productGrid: {
       display: "grid",
       gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-      gap: "30px",
+      gap: "40px",
       maxWidth: "1400px",
       margin: "0 auto",
     },
     productCard: {
       background: "#ffffff",
-      padding: "25px",
-      borderRadius: "20px",
-      boxShadow: "0 8px 25px rgba(0, 0, 0, 0.1)",
-      border: "1px solid #e9ecef",
-      transition: "all 0.3s ease",
+      borderRadius: "24px",
+      boxShadow: "0 4px 20px rgba(0, 0, 0, 0.06)",
+      border: "2px solid #e2e8f0",
+      transition: "all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55)",
       position: "relative",
       overflow: "hidden",
+      cursor: "pointer",
     },
-    productCardHover: {
-      transform: "translateY(-8px)",
-      boxShadow: "0 15px 40px rgba(2, 62, 138, 0.2)",
+    productImageContainer: {
+      position: "relative",
+      overflow: "hidden",
+      background: "linear-gradient(135deg, #023E8A 0%, #0077B6 100%)",
+      height: "220px",
     },
     productImage: {
       width: "100%",
-      height: "180px",
+      height: "100%",
       objectFit: "cover",
-      borderRadius: "15px",
-      marginBottom: "20px",
-      transition: "all 0.3s ease",
+      transition: "all 0.5s ease",
+    },
+    productBadge: {
+      position: "absolute",
+      top: "16px",
+      right: "16px",
+      background: "rgba(255, 255, 255, 0.95)",
+      color: "#023E8A",
+      padding: "8px 16px",
+      borderRadius: "20px",
+      fontSize: "0.85rem",
+      fontWeight: "700",
+      backdropFilter: "blur(10px)",
+      boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
+    },
+    productContent: {
+      padding: "28px",
     },
     productName: {
-      fontSize: "1.4rem",
-      fontWeight: "600",
+      fontSize: "1.5rem",
+      fontWeight: "700",
       color: "#023E8A",
-      margin: "15px 0 10px 0",
+      margin: "0 0 12px 0",
     },
     productPrice: {
-      color: "#28a745",
-      fontSize: "1.3rem",
-      fontWeight: "700",
-      marginBottom: "20px",
+      color: "#10b981",
+      fontSize: "1.6rem",
+      fontWeight: "800",
+      marginBottom: "24px",
+      display: "block",
     },
     productButton: {
-      background: "#023E8A",
+      background: "linear-gradient(135deg, #023E8A 0%, #0077B6 100%)",
       color: "#ffffff",
       border: "none",
-      padding: "12px 25px",
-      borderRadius: "25px",
+      padding: "14px 32px",
+      borderRadius: "50px",
       fontSize: "1rem",
-      fontWeight: "600",
+      fontWeight: "700",
       cursor: "pointer",
       transition: "all 0.3s ease",
       textTransform: "uppercase",
-      letterSpacing: "0.5px",
-    },
-    productButtonHover: {
-      background: "#012a5c",
-      transform: "translateY(-2px)",
+      letterSpacing: "1px",
+      width: "100%",
+      boxShadow: "0 4px 15px rgba(2, 62, 138, 0.2)",
     },
 
     // About Preview Section
     aboutPreviewSection: {
-      padding: "80px 20px",
-      background: "#f8f9fa",
+      padding: "100px 20px",
+      background: "linear-gradient(135deg, #023E8A 0%, #0077B6 50%, #00B4D8 100%)",
+      position: "relative",
+      overflow: "hidden",
+    },
+    aboutContent: {
+      maxWidth: "900px",
+      margin: "0 auto",
       textAlign: "center",
+      position: "relative",
+      zIndex: 2,
     },
     aboutText: {
-      fontSize: "1.2rem",
-      lineHeight: "1.8",
-      maxWidth: "800px",
-      margin: "0 auto 40px auto",
-      color: "#495057",
+      fontSize: "1.3rem",
+      lineHeight: "1.9",
+      marginBottom: "48px",
+      color: "#ffffff",
+      opacity: "0.95",
     },
     aboutButton: {
-      background: "#023E8A",
-      color: "#ffffff",
+      background: "#ffffff",
+      color: "#023E8A",
       border: "none",
-      padding: "15px 30px",
-      borderRadius: "25px",
+      padding: "18px 45px",
+      borderRadius: "50px",
       fontSize: "1.1rem",
-      fontWeight: "600",
+      fontWeight: "700",
       cursor: "pointer",
-      transition: "all 0.3s ease",
+      transition: "all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55)",
       textTransform: "uppercase",
-      letterSpacing: "0.5px",
-    },
-    aboutButtonHover: {
-      background: "#012a5c",
-      transform: "translateY(-2px)",
+      letterSpacing: "2px",
+      boxShadow: "0 8px 30px rgba(255, 255, 255, 0.3)",
     },
 
     // Testimonials Section
     testimonialSection: {
-      padding: "80px 20px",
+      padding: "100px 20px",
       textAlign: "center",
-      background: "#ffffff",
+      background: "linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)",
     },
     testimonialGrid: {
       display: "grid",
       gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-      gap: "30px",
-      maxWidth: "1200px",
+      gap: "40px",
+      maxWidth: "1300px",
       margin: "0 auto",
     },
     testimonialCard: {
-      background: "#f8f9fa",
-      padding: "35px 25px",
-      borderRadius: "20px",
-      boxShadow: "0 6px 20px rgba(0, 0, 0, 0.08)",
-      border: "1px solid #e9ecef",
-      transition: "all 0.3s ease",
+      background: "#ffffff",
+      padding: "40px 32px",
+      borderRadius: "24px",
+      boxShadow: "0 8px 30px rgba(2, 62, 138, 0.08)",
+      border: "2px solid #e2e8f0",
+      transition: "all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55)",
       position: "relative",
     },
-    testimonialCardHover: {
-      transform: "translateY(-5px)",
-      boxShadow: "0 10px 30px rgba(2, 62, 138, 0.15)",
+    quoteIcon: {
+      fontSize: "3rem",
+      color: "#0077B6",
+      opacity: "0.2",
+      marginBottom: "16px",
+      lineHeight: "1",
     },
     testimonialFeedback: {
-      fontSize: "1.1rem",
+      fontSize: "1.15rem",
       fontStyle: "italic",
-      color: "#495057",
-      lineHeight: "1.6",
-      marginBottom: "20px",
+      color: "#334155",
+      lineHeight: "1.8",
+      marginBottom: "24px",
     },
     testimonialName: {
       fontWeight: "700",
       color: "#023E8A",
-      fontSize: "1.1rem",
-      marginBottom: "10px",
+      fontSize: "1.2rem",
+      marginBottom: "8px",
     },
     testimonialRating: {
-      color: "#ffc107",
-      fontSize: "1.2rem",
+      color: "#fbbf24",
+      fontSize: "1.4rem",
+      letterSpacing: "4px",
     },
 
     // CTA Section
     ctaSection: {
-      padding: "80px 20px",
-      background: "linear-gradient(135deg, #023E8A 0%, #0056b3 100%)",
+      padding: "100px 20px",
+      background: "linear-gradient(135deg, #023E8A 0%, #0077B6 50%, #00B4D8 100%)",
       color: "#ffffff",
       textAlign: "center",
+      position: "relative",
+      overflow: "hidden",
     },
     ctaTitle: {
-      fontSize: "2.5rem",
-      fontWeight: "700",
-      marginBottom: "20px",
-      textShadow: "0 2px 4px rgba(0, 0, 0, 0.3)",
+      fontSize: "3rem",
+      fontWeight: "800",
+      marginBottom: "24px",
+      textShadow: "0 4px 20px rgba(0, 0, 0, 0.3)",
+      letterSpacing: "-1px",
     },
     ctaSubtitle: {
-      fontSize: "1.3rem",
-      marginBottom: "40px",
+      fontSize: "1.4rem",
+      marginBottom: "48px",
       opacity: "0.95",
+      maxWidth: "700px",
+      margin: "0 auto 48px",
     },
     ctaButton: {
       background: "#ffffff",
       color: "#023E8A",
       border: "none",
-      padding: "18px 35px",
-      borderRadius: "30px",
+      padding: "20px 50px",
+      borderRadius: "50px",
       fontSize: "1.2rem",
-      fontWeight: "600",
+      fontWeight: "700",
       cursor: "pointer",
-      transition: "all 0.3s ease",
+      transition: "all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55)",
       textTransform: "uppercase",
-      letterSpacing: "0.5px",
-      boxShadow: "0 4px 15px rgba(255, 255, 255, 0.3)",
-    },
-    ctaButtonHover: {
-      transform: "translateY(-3px)",
-      boxShadow: "0 6px 25px rgba(255, 255, 255, 0.4)",
+      letterSpacing: "2px",
+      boxShadow: "0 8px 30px rgba(255, 255, 255, 0.3)",
     },
 
     // Responsive Design
     '@media (max-width: 768px)': {
-      heroTitle: {
-        fontSize: "2.5rem",
-      },
-      heroSubtitle: {
-        fontSize: "1.2rem",
-      },
-      sectionTitle: {
-        fontSize: "2.2rem",
-      },
-      highlightList: {
-        gridTemplateColumns: "1fr",
-      },
-      productGrid: {
-        gridTemplateColumns: "1fr",
-      },
-      testimonialGrid: {
-        gridTemplateColumns: "1fr",
-      },
+      heroTitle: { fontSize: "2.5rem" },
+      heroSubtitle: { fontSize: "1.2rem" },
+      sectionTitle: { fontSize: "2.2rem" },
     },
   };
 
@@ -354,20 +388,20 @@ const HomePage = () => {
     <div style={styles.container}>
       {/* Hero Banner */}
       <section style={styles.heroSection}>
+        <div style={{...styles.heroDecoration, ...styles.heroDecorationTop}}></div>
+        <div style={{...styles.heroDecoration, ...styles.heroDecorationBottom}}></div>
         <div style={styles.heroContent}>
           <h1 style={styles.heroTitle}>Nation Motor Spares</h1>
           <p style={styles.heroSubtitle}>Your trusted motorcycle spare parts supplier in Sri Lanka</p>
-          <button 
+          <button
             style={styles.heroButton}
             onMouseEnter={(e) => {
-              e.target.style.transform = styles.heroButtonHover.transform;
-              e.target.style.boxShadow = styles.heroButtonHover.boxShadow;
-              e.target.style.background = styles.heroButtonHover.background;
+              e.target.style.transform = "translateY(-4px) scale(1.05)";
+              e.target.style.boxShadow = "0 12px 40px rgba(255, 255, 255, 0.4)";
             }}
             onMouseLeave={(e) => {
               e.target.style.transform = "none";
-              e.target.style.boxShadow = styles.heroButton.boxShadow;
-              e.target.style.background = styles.heroButton.background;
+              e.target.style.boxShadow = "0 8px 30px rgba(255, 255, 255, 0.3)";
             }}
             onClick={() => navigate("/products")}
           >
@@ -378,34 +412,28 @@ const HomePage = () => {
 
       {/* Highlights / Why Choose Us */}
       <section style={styles.highlightSection}>
-        <h2 style={styles.sectionTitle}>
-          Why Choose Us?
-          <div style={styles.sectionTitleUnderline}></div>
-        </h2>
+        <h2 style={styles.sectionTitle}>Why Choose Us?</h2>
+        <p style={styles.sectionSubtitle}>Excellence in every part, trust in every delivery</p>
         <ul style={styles.highlightList}>
-          {[
-            "Wide range of genuine and aftermarket spare parts",
-            "Nationwide delivery with trusted logistics",
-            "Competitive pricing and seasonal offers",
-            "Experienced team with years of industry expertise",
-            "Customer-first service with dedicated support"
-          ].map((text, index) => (
-            <li 
+          {highlights.map((text, index) => (
+            <li
               key={index}
               style={styles.highlightItem}
               onMouseEnter={(e) => {
-                e.currentTarget.style.transform = styles.highlightItemHover.transform;
-                e.currentTarget.style.boxShadow = styles.highlightItemHover.boxShadow;
-                e.currentTarget.style.borderColor = styles.highlightItemHover.borderColor;
+                setHoveredHighlight(index);
+                e.currentTarget.style.transform = "translateY(-8px)";
+                e.currentTarget.style.boxShadow = "0 12px 40px rgba(2, 62, 138, 0.15)";
+                e.currentTarget.style.borderColor = "#0077B6";
               }}
               onMouseLeave={(e) => {
+                setHoveredHighlight(null);
                 e.currentTarget.style.transform = "none";
-                e.currentTarget.style.boxShadow = styles.highlightItem.boxShadow;
-                e.currentTarget.style.borderColor = styles.highlightItem.borderColor;
+                e.currentTarget.style.boxShadow = "0 4px 20px rgba(2, 62, 138, 0.08)";
+                e.currentTarget.style.borderColor = "#e2e8f0";
               }}
             >
               <span style={styles.highlightIcon}>✓</span>
-              {text}
+              <span>{text}</span>
             </li>
           ))}
         </ul>
@@ -413,41 +441,57 @@ const HomePage = () => {
 
       {/* Top Selling Products */}
       <section style={styles.productSection}>
-        <h2 style={styles.sectionTitle}>
-          Top Selling Products
-          <div style={styles.sectionTitleUnderline}></div>
-        </h2>
+        <h2 style={styles.sectionTitle}>Top Selling Products</h2>
+        <p style={styles.sectionSubtitle}>Premium quality parts for your motorcycle</p>
         <div style={styles.productGrid}>
           {topProducts.map((product) => (
-            <div 
-              key={product.id} 
+            <div
+              key={product.id}
               style={styles.productCard}
               onMouseEnter={(e) => {
-                e.currentTarget.style.transform = styles.productCardHover.transform;
-                e.currentTarget.style.boxShadow = styles.productCardHover.boxShadow;
+                setHoveredProduct(product.id);
+                e.currentTarget.style.transform = "translateY(-12px)";
+                e.currentTarget.style.boxShadow = "0 20px 60px rgba(2, 62, 138, 0.2)";
+                e.currentTarget.style.borderColor = "#0077B6";
               }}
               onMouseLeave={(e) => {
+                setHoveredProduct(null);
                 e.currentTarget.style.transform = "none";
-                e.currentTarget.style.boxShadow = styles.productCard.boxShadow;
+                e.currentTarget.style.boxShadow = "0 4px 20px rgba(0, 0, 0, 0.06)";
+                e.currentTarget.style.borderColor = "#e2e8f0";
               }}
             >
-              <img src={product.image} alt={product.name} style={styles.productImage} />
-              <h3 style={styles.productName}>{product.name}</h3>
-              <p style={styles.productPrice}>{product.price}</p>
-              <button 
-                style={styles.productButton}
-                onMouseEnter={(e) => {
-                  e.target.style.background = styles.productButtonHover.background;
-                  e.target.style.transform = styles.productButtonHover.transform;
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.background = styles.productButton.background;
-                  e.target.style.transform = "none";
-                }}
-                onClick={() => navigate("/products")}
-              >
-                View Product
-              </button>
+              <div style={styles.productImageContainer}>
+                <img 
+                  src={product.image} 
+                  alt={product.name} 
+                  style={{
+                    ...styles.productImage,
+                    transform: hoveredProduct === product.id ? "scale(1.15)" : "scale(1)",
+                  }} 
+                />
+                <div style={styles.productBadge}>POPULAR</div>
+              </div>
+              <div style={styles.productContent}>
+                <h3 style={styles.productName}>{product.name}</h3>
+                <span style={styles.productPrice}>{product.price}</span>
+                <button
+                  style={styles.productButton}
+                  onMouseEnter={(e) => {
+                    e.target.style.background = "linear-gradient(135deg, #012a5c 0%, #023E8A 100%)";
+                    e.target.style.transform = "scale(1.02)";
+                    e.target.style.boxShadow = "0 8px 25px rgba(2, 62, 138, 0.3)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.background = "linear-gradient(135deg, #023E8A 0%, #0077B6 100%)";
+                    e.target.style.transform = "none";
+                    e.target.style.boxShadow = "0 4px 15px rgba(2, 62, 138, 0.2)";
+                  }}
+                  onClick={() => navigate("/products")}
+                >
+                  View Details
+                </button>
+              </div>
             </div>
           ))}
         </div>
@@ -455,51 +499,55 @@ const HomePage = () => {
 
       {/* About Preview */}
       <section style={styles.aboutPreviewSection}>
-        <h2 style={styles.sectionTitle}>
-          About Nation Motor Spares
-          <div style={styles.sectionTitleUnderline}></div>
-        </h2>
-        <p style={styles.aboutText}>
-          Nation Motor Spares is Sri Lanka's leading motorcycle spare parts supplier, delivering high-quality and reliable products across the country. Our mission is to make top-quality spare parts accessible to everyone, whether you are a professional mechanic or an everyday rider.
-        </p>
-        <button 
-          style={styles.aboutButton}
-          onMouseEnter={(e) => {
-            e.target.style.background = styles.aboutButtonHover.background;
-            e.target.style.transform = styles.aboutButtonHover.transform;
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.background = styles.aboutButton.background;
-            e.target.style.transform = "none";
-          }}
-          onClick={() => navigate("/about")}
-        >
-          Read More
-        </button>
+        <div style={{...styles.heroDecoration, ...styles.heroDecorationTop}}></div>
+        <div style={{...styles.heroDecoration, ...styles.heroDecorationBottom}}></div>
+        <div style={styles.aboutContent}>
+          <h2 style={{...styles.sectionTitle, color: "#ffffff", marginBottom: "24px"}}>
+            About Nation Motor Spares
+          </h2>
+          <p style={styles.aboutText}>
+            Nation Motor Spares is Sri Lanka's leading motorcycle spare parts supplier, delivering high-quality and reliable products across the country. Our mission is to make top-quality spare parts accessible to everyone, whether you are a professional mechanic or an everyday rider.
+          </p>
+          <button
+            style={styles.aboutButton}
+            onMouseEnter={(e) => {
+              e.target.style.transform = "translateY(-4px) scale(1.05)";
+              e.target.style.boxShadow = "0 12px 40px rgba(255, 255, 255, 0.4)";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.transform = "none";
+              e.target.style.boxShadow = "0 8px 30px rgba(255, 255, 255, 0.3)";
+            }}
+            onClick={() => navigate("/about")}
+          >
+            Learn More
+          </button>
+        </div>
       </section>
 
       {/* Customer Testimonials */}
       <section style={styles.testimonialSection}>
-        <h2 style={styles.sectionTitle}>
-          What Our Customers Say
-          <div style={styles.sectionTitleUnderline}></div>
-        </h2>
+        <h2 style={styles.sectionTitle}>What Our Customers Say</h2>
+        <p style={styles.sectionSubtitle}>Real experiences from our valued customers</p>
         <div style={styles.testimonialGrid}>
           {testimonials.map((testimonial) => (
-            <div 
-              key={testimonial.id} 
+            <div
+              key={testimonial.id}
               style={styles.testimonialCard}
               onMouseEnter={(e) => {
-                e.currentTarget.style.transform = styles.testimonialCardHover.transform;
-                e.currentTarget.style.boxShadow = styles.testimonialCardHover.boxShadow;
+                e.currentTarget.style.transform = "translateY(-8px)";
+                e.currentTarget.style.boxShadow = "0 16px 50px rgba(2, 62, 138, 0.15)";
+                e.currentTarget.style.borderColor = "#0077B6";
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = "none";
-                e.currentTarget.style.boxShadow = styles.testimonialCard.boxShadow;
+                e.currentTarget.style.boxShadow = "0 8px 30px rgba(2, 62, 138, 0.08)";
+                e.currentTarget.style.borderColor = "#e2e8f0";
               }}
             >
-              <p style={styles.testimonialFeedback}>"{testimonial.feedback}"</p>
-              <p style={styles.testimonialName}>- {testimonial.name}</p>
+              <div style={styles.quoteIcon}>"</div>
+              <p style={styles.testimonialFeedback}>{testimonial.feedback}</p>
+              <p style={styles.testimonialName}>{testimonial.name}</p>
               <div style={styles.testimonialRating}>
                 {"★".repeat(testimonial.rating)}
               </div>
@@ -510,22 +558,26 @@ const HomePage = () => {
 
       {/* Call to Action */}
       <section style={styles.ctaSection}>
-        <h2 style={styles.ctaTitle}>Need help finding the right part?</h2>
-        <p style={styles.ctaSubtitle}>Contact us today and our experts will assist you!</p>
-        <button 
-          style={styles.ctaButton}
-          onMouseEnter={(e) => {
-            e.target.style.transform = styles.ctaButtonHover.transform;
-            e.target.style.boxShadow = styles.ctaButtonHover.boxShadow;
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.transform = "none";
-            e.target.style.boxShadow = styles.ctaButton.boxShadow;
-          }}
-          onClick={() => navigate("/contact")}
-        >
-          Contact Us
-        </button>
+        <div style={{...styles.heroDecoration, ...styles.heroDecorationTop}}></div>
+        <div style={{...styles.heroDecoration, ...styles.heroDecorationBottom}}></div>
+        <div style={{position: "relative", zIndex: 2}}>
+          <h2 style={styles.ctaTitle}>Need help finding the right part?</h2>
+          <p style={styles.ctaSubtitle}>Contact us today and our experts will assist you!</p>
+          <button
+            style={styles.ctaButton}
+            onMouseEnter={(e) => {
+              e.target.style.transform = "translateY(-4px) scale(1.05)";
+              e.target.style.boxShadow = "0 12px 40px rgba(255, 255, 255, 0.4)";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.transform = "none";
+              e.target.style.boxShadow = "0 8px 30px rgba(255, 255, 255, 0.3)";
+            }}
+            onClick={() => navigate("/contact")}
+          >
+            Contact Us
+          </button>
+        </div>
       </section>
     </div>
   );

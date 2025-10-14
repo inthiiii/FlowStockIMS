@@ -11,6 +11,10 @@ import AboutPage from "./pages/AboutPage";
 import ContactPage from "./pages/ContactPage";
 import ProductView from "./pages/ProductView";
 import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
+
 
 // Private Pages (Navigation Bar)
 import DashboardPage from "./pages/DashboardPage";
@@ -30,6 +34,11 @@ import CreateDelivery from "./pages/CreateDelivery";
 import DeliveryList from "./pages/DeliveryList";
 import DeliveryUpdatePage from "./pages/DeliveryUpdatePage";
 import ContactUsReceivePage from "./pages/ContactUsReceivePage";
+import Users from "./pages/UserDashboard";
+import UserControl from "./pages/UserControl";
+import CustomerControl from "./pages/CustomerControl";
+import ProductsPage from "./pages/ProductsPage";
+import FavoritesPage from "./pages/FavoritesPage";
 
 // Layout wrapper for Navigation Pages
 const NavigationLayout = ({ children }) => {
@@ -101,6 +110,42 @@ const App = () => {
           }
         />
 
+        {/* Forgot Password Page (Header + Footer) */}
+        <Route
+          path="/forgot-password"
+          element={
+            <>
+              <Header />
+              <ForgotPassword />
+              <Footer />
+            </>
+          }
+        />
+
+        {/* Reset Password Page (Header + Footer) */}
+        <Route
+          path="/reset-password"
+          element={
+            <>
+              <Header />
+              <ResetPasswordPage />
+              <Footer />
+            </>
+          }
+        />
+
+        {/* Register Page (Header + Footer) */}
+        <Route
+          path="/register"
+          element={
+            <>
+              <Header />
+              <RegisterPage />
+              <Footer />
+            </>
+          }
+        />
+
         {/* Pages with Navigation Bar */}
         <Route
           path="/dashboard"
@@ -110,6 +155,40 @@ const App = () => {
             </NavigationLayout>
           }
         />
+
+        <Route
+          path="/user/dashboard"
+          element={
+            <NavigationLayout>
+              <Users />
+            </NavigationLayout>
+          }
+        />
+        <Route
+          path="/user/customers"
+          element={
+            <NavigationLayout>
+              <CustomerControl />
+            </NavigationLayout>
+          }
+        />
+        <Route
+          path="/user/control"
+          element={
+            <NavigationLayout>
+              <UserControl />
+            </NavigationLayout>
+          }
+        />
+        <Route
+          path="/contact/contactview"
+          element={
+            <NavigationLayout>
+              <ContactUsReceivePage />
+            </NavigationLayout>
+          }
+        />  
+
         <Route
           path="/contact/contactview"
           element={
@@ -187,6 +266,23 @@ const App = () => {
           element={
             <NavigationLayout>
               <EditProduct />
+            </NavigationLayout>
+          }
+        />
+        <Route
+          path="/products/list"
+          element={
+            <NavigationLayout>
+              <ProductsPage />
+            </NavigationLayout>
+          }
+        />
+
+        <Route
+          path="/products/favorites"
+          element={
+            <NavigationLayout>
+              <FavoritesPage />
             </NavigationLayout>
           }
         />

@@ -1,36 +1,75 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { authService } from "../services/authService";
 
-const LoginPage = () => {
+const ResetPasswordPage = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({ username: "", password: "" });
-  const [loading, setLoading] = useState(false);
+  const [searchParams] = useSearchParams();
+  const [formData, setFormData] = useState({ password: "", confirmPassword: "" });
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [focusedField, setFocusedField] = useState(null);
+  const [token, setToken] = useState("");
+
+  useEffect(() => {
+    const tokenParam = searchParams.get('token');
+    if (!tokenParam) {
+      setError("Invalid reset link. Please request a new password reset.");
+      return;
+    }
+    setToken(tokenParam);
+  }, [searchParams]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    setError(""); // Clear error when user starts typing
   };
 
-  const handleLogin = async (e) => {
+  const validatePassword = (password) => {
+    // Exactly 6 characters, one uppercase, one digit, one special character
+    const strongRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{6}$/;
+    if (!strongRegex.test(password)) {
+      return "Password must be exactly 6 characters and include 1 uppercase letter, 1 number, and 1 special character";
+    }
+    return null;
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    
+    // Validation
+    if (!formData.password || !formData.confirmPassword) {
+      setError("Please fill in all fields");
+      return;
+    }
+
+    const passwordError = validatePassword(formData.password);
+    if (passwordError) {
+      setError(passwordError);
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
     setLoading(true);
     try {
-      // Backend expects email, map username -> email
-      await authService.login({ email: formData.username, password: formData.password });
-      navigate("/dashboard");
-    } catch (e) {
-      setError("Invalid credentials");
+      await authService.resetPassword({ token, password: formData.password });
+      setSuccess(true);
+      setTimeout(() => {
+        navigate("/login");
+      }, 2000);
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to reset password. Please try again.");
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleSignup = () => {
-    navigate("/register");
   };
 
   const styles = {
@@ -168,13 +207,9 @@ const LoginPage = () => {
       borderColor: "#023E8A",
       boxShadow: "0 0 0 3px rgba(2, 62, 138, 0.1)",
     },
-    inputIcon: {
-      position: "absolute",
-      right: "15px",
-      top: "50%",
-      transform: "translateY(-50%)",
-      color: "#6c757d",
-      fontSize: "1.2rem",
+    inputError: {
+      borderColor: "#dc3545",
+      boxShadow: "0 0 0 3px rgba(220, 53, 69, 0.1)",
     },
     passwordToggle: {
       position: "absolute",
@@ -190,28 +225,6 @@ const LoginPage = () => {
     },
     passwordToggleHover: {
       color: "#023E8A",
-    },
-    rememberForgot: {
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      fontSize: "0.9rem",
-    },
-    checkbox: {
-      display: "flex",
-      alignItems: "center",
-      gap: "8px",
-      color: "#495057",
-    },
-    forgotLink: {
-      color: "#023E8A",
-      textDecoration: "none",
-      fontWeight: "500",
-      transition: "color 0.3s ease",
-    },
-    forgotLinkHover: {
-      color: "#012a5c",
-      textDecoration: "underline",
     },
     button: {
       background: "linear-gradient(135deg, #023E8A 0%, #0056b3 100%)",
@@ -237,24 +250,6 @@ const LoginPage = () => {
       cursor: "not-allowed",
       transform: "none",
     },
-    signupContainer: {
-      marginTop: "16px",
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      gap: "8px",
-      color: "#6c757d",
-      fontSize: "0.95rem",
-    },
-    signupButton: {
-      background: "none",
-      border: "none",
-      color: "#023E8A",
-      fontWeight: "600",
-      cursor: "pointer",
-      padding: 0,
-      textDecoration: "underline",
-    },
     spinner: {
       display: "inline-block",
       width: "20px",
@@ -265,10 +260,37 @@ const LoginPage = () => {
       animation: "spin 0.8s linear infinite",
       marginRight: "10px",
     },
-    footer: {
+    errorText: {
+      color: "#dc3545",
+      fontSize: "0.9rem",
+      marginTop: "5px",
+    },
+    successContainer: {
       textAlign: "center",
-      marginTop: "30px",
+      padding: "20px",
+    },
+    successIcon: {
+      fontSize: "4rem",
+      marginBottom: "20px",
+    },
+    successTitle: {
+      color: "#28a745",
+      fontSize: "1.5rem",
+      fontWeight: "600",
+      marginBottom: "10px",
+    },
+    successMessage: {
       color: "#6c757d",
+      fontSize: "1rem",
+    },
+    backToLogin: {
+      marginTop: "20px",
+      textAlign: "center",
+    },
+    backLink: {
+      color: "#023E8A",
+      textDecoration: "none",
+      fontWeight: "500",
       fontSize: "0.9rem",
     },
     '@media (max-width: 968px)': {
@@ -277,6 +299,29 @@ const LoginPage = () => {
       },
     },
   };
+
+  if (success) {
+    return (
+      <div style={styles.container}>
+        <div style={styles.rightPanel}>
+          <div style={styles.formContainer}>
+            <div style={styles.successContainer}>
+              <div style={styles.successIcon}>✅</div>
+              <h2 style={styles.successTitle}>Password Reset Successful!</h2>
+              <p style={styles.successMessage}>
+                Your password has been updated successfully. You will be redirected to the login page shortly.
+              </p>
+              <div style={styles.backToLogin}>
+                <a href="/login" style={styles.backLink}>
+                  Go to Login Page
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={styles.container}>
@@ -288,81 +333,53 @@ const LoginPage = () => {
         <div style={styles.brandContent}>
           <h1 style={styles.logo}>Nation Motor Spares</h1>
           <p style={styles.tagline}>
-            Your trusted motorcycle spare parts supplier in <br></br>Sri Lanka
+            Create a new password to secure your account
           </p>
           
           <div style={styles.features}>
             <div style={styles.featureItem}>
-              <span style={styles.featureIcon}>✓</span>
-              <span>Comprehensive Inventory Management</span>
+              <span style={styles.featureIcon}>🔒</span>
+              <span>Secure Password Reset</span>
             </div>
             <div style={styles.featureItem}>
-              <span style={styles.featureIcon}>✓</span>
-              <span>Real-time Sales Tracking</span>
+              <span style={styles.featureIcon}>⚡</span>
+              <span>Quick & Easy Process</span>
             </div>
             <div style={styles.featureItem}>
-              <span style={styles.featureIcon}>✓</span>
-              <span>Efficient Delivery System</span>
-            </div>
-            <div style={styles.featureItem}>
-              <span style={styles.featureIcon}>✓</span>
-              <span>Advanced Analytics Dashboard</span>
+              <span style={styles.featureIcon}>🛡️</span>
+              <span>Account Security</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Right Panel - Login Form */}
+      {/* Right Panel - Reset Password Form */}
       <div style={styles.rightPanel}>
         <div style={styles.formContainer}>
           <div style={styles.formHeader}>
-            <h2 style={styles.title}>Welcome Back</h2>
-            <p style={styles.subtitle}>Sign in to access your admin dashboard</p>
+            <h2 style={styles.title}>Reset Password</h2>
+            <p style={styles.subtitle}>Enter your new password below</p>
           </div>
 
-          <form onSubmit={handleLogin} style={styles.form}>
-            {/* Username Field */}
+          <form onSubmit={handleSubmit} style={styles.form}>
+            {/* New Password Field */}
             <div style={styles.inputGroup}>
-              <label style={styles.label}>Username</label>
-              <div style={styles.inputWrapper}>
-                <input
-                  type="text"
-                  name="username"
-                  placeholder="Enter your email address"
-                  value={formData.username}
-                  onChange={handleChange}
-                  onFocus={() => setFocusedField('username')}
-                  onBlur={() => setFocusedField(null)}
-                  required
-                  style={{
-                    ...styles.input,
-                    ...(focusedField === 'username' && styles.inputFocused)
-                  }}
-                  disabled={loading}
-                />
-                <span style={styles.inputIcon}>👤</span>
-              </div>
-            {error && (
-              <div style={{ color: "#dc3545", fontSize: "0.9rem" }}>{error}</div>
-            )}
-            </div>
-
-            {/* Password Field */}
-            <div style={styles.inputGroup}>
-              <label style={styles.label}>Password</label>
+              <label style={styles.label}>New Password</label>
               <div style={styles.inputWrapper}>
                 <input
                   type={showPassword ? "text" : "password"}
                   name="password"
-                  placeholder="Enter your password"
+                  placeholder="Enter your new password"
                   value={formData.password}
                   onChange={handleChange}
                   onFocus={() => setFocusedField('password')}
                   onBlur={() => setFocusedField(null)}
                   required
+                  maxLength={6}
                   style={{
                     ...styles.input,
-                    ...(focusedField === 'password' && styles.inputFocused)
+                    ...(focusedField === 'password' && styles.inputFocused),
+                    ...(error && styles.inputError)
                   }}
                   disabled={loading}
                 />
@@ -382,27 +399,46 @@ const LoginPage = () => {
               </div>
             </div>
 
-            {/* Remember & Forgot */}
-            <div style={styles.rememberForgot}>
-              <label style={styles.checkbox}>
-                <input type="checkbox" />
-                <span>Remember me</span>
-              </label>
-              <a
-                href="/forgot-password"
-                style={styles.forgotLink}
-                onMouseEnter={(e) => {
-                  e.target.style.color = styles.forgotLinkHover.color;
-                  e.target.style.textDecoration = styles.forgotLinkHover.textDecoration;
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.color = styles.forgotLink.color;
-                  e.target.style.textDecoration = styles.forgotLink.textDecoration;
-                }}
-              >
-                Forgot Password?
-              </a>
+            {/* Confirm Password Field */}
+            <div style={styles.inputGroup}>
+              <label style={styles.label}>Confirm Password</label>
+              <div style={styles.inputWrapper}>
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  name="confirmPassword"
+                  placeholder="Confirm your new password"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  onFocus={() => setFocusedField('confirmPassword')}
+                  onBlur={() => setFocusedField(null)}
+                  required
+                  maxLength={6}
+                  style={{
+                    ...styles.input,
+                    ...(focusedField === 'confirmPassword' && styles.inputFocused),
+                    ...(error && styles.inputError)
+                  }}
+                  disabled={loading}
+                />
+                <button
+                  type="button"
+                  style={styles.passwordToggle}
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = styles.passwordToggleHover.color;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = styles.passwordToggle.color;
+                  }}
+                >
+                  {showConfirmPassword ? "👁️" : "👁️‍🗨️"}
+                </button>
+              </div>
             </div>
+
+            {error && (
+              <div style={styles.errorText}>{error}</div>
+            )}
 
             {/* Submit Button */}
             <button
@@ -423,23 +459,18 @@ const LoginPage = () => {
                   e.currentTarget.style.boxShadow = "none";
                 }
               }}
-              disabled={loading}
+              disabled={loading || !token}
             >
               {loading && <span style={styles.spinner}></span>}
-              {loading ? "Signing In..." : "Login"}
+              {loading ? "Resetting..." : "Reset Password"}
             </button>
 
-            <div style={styles.signupContainer}>
-              <span>Don't have an account?</span>
-              <button type="button" style={styles.signupButton} onClick={handleSignup}>
-                Sign Up
-              </button>
+            <div style={styles.backToLogin}>
+              <a href="/login" style={styles.backLink}>
+                Back to Login
+              </a>
             </div>
           </form>
-
-          <div style={styles.footer}>
-            <p>© 2025 Nation Motor Spares. All rights reserved.</p>
-          </div>
         </div>
       </div>
 
@@ -461,4 +492,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default ResetPasswordPage;

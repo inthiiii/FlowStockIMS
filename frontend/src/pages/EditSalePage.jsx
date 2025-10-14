@@ -17,7 +17,6 @@ const EditSalePage = () => {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  // Fetch existing sale data
   useEffect(() => {
     const fetchSale = async () => {
       try {
@@ -25,233 +24,240 @@ const EditSalePage = () => {
         if (!response.ok) throw new Error("Failed to fetch sale details");
         const data = await response.json();
         setSale(data);
-        setLoading(false);
       } catch (err) {
-        console.error(err);
-        setError("Error loading sale details");
+        setError("Error loading sale details. Please try again later.");
+      } finally {
         setLoading(false);
       }
     };
     fetchSale();
   }, [id]);
 
-  // Handle input change
   const handleChange = (e) => {
     setSale({ ...sale, [e.target.name]: e.target.value });
   };
 
-  // Handle form submit
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setMessage("");
+    setError("");
     try {
       const response = await fetch(`http://localhost:3000/api/sales/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          customerName: sale.customerName,
-          customerEmail: sale.customerEmail,
-          customerPhone: sale.customerPhone,
+          ...sale,
           quantity: Number(sale.quantity),
           pricePerUnit: Number(sale.pricePerUnit),
-          paymentStatus: sale.paymentStatus,
         }),
       });
 
-      if (!response.ok) throw new Error("Failed to update sale");
-      const updatedSale = await response.json();
-
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to update sale");
+      }
+      
       setMessage("Sale updated successfully!");
-      setTimeout(() => navigate(`/sales/${id}`), 1500); // Redirect back to details page
+      setTimeout(() => navigate(`/sales/${id}`), 1500);
     } catch (err) {
-      console.error(err);
-      setError("Error updating sale");
+      setError(err.message);
     }
   };
 
   const styles = {
     container: {
-      maxWidth: "700px",
+      maxWidth: "900px",
       margin: "0 auto",
-      padding: "40px 20px",
-      backgroundColor: "#ffffff",
+      padding: "100px 30px 50px", // Pushed content down for floating nav
+      background: "linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%)",
       minHeight: "100vh",
-      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+      fontFamily: "'Inter', sans-serif",
+    },
+    header: {
+      textAlign: "center",
+      marginBottom: "30px",
+      animation: "fadeInDown 0.6s ease-out",
     },
     title: {
-      textAlign: "center",
-      fontSize: "2rem",
-      fontWeight: "600",
       color: "#023E8A",
-      marginBottom: "30px",
-    },
-    form: {
-      backgroundColor: "#f8f9fa",
-      padding: "30px",
-      borderRadius: "12px",
-      boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
-      border: "1px solid #e9ecef",
-    },
-    label: {
-      display: "block",
-      fontSize: "1rem",
-      fontWeight: "600",
-      color: "#495057",
-      marginBottom: "8px",
-    },
-    input: {
-      width: "100%",
-      padding: "10px",
-      fontSize: "1rem",
-      borderRadius: "6px",
-      border: "1px solid #ced4da",
-      marginBottom: "20px",
-    },
-    select: {
-      width: "100%",
-      padding: "10px",
-      fontSize: "1rem",
-      borderRadius: "6px",
-      border: "1px solid #ced4da",
-      marginBottom: "20px",
-    },
-    button: {
-      backgroundColor: "#023E8A",
-      color: "#fff",
-      padding: "12px 25px",
-      fontSize: "1rem",
-      fontWeight: "600",
-      border: "none",
-      borderRadius: "8px",
-      cursor: "pointer",
-      transition: "all 0.3s ease",
-      display: "block",
-      width: "100%",
-    },
-    buttonHover: {
-      backgroundColor: "#012a5c",
-    },
-    message: {
-      color: "#28a745",
-      textAlign: "center",
-      marginBottom: "15px",
-      fontWeight: "600",
-    },
-    error: {
-      color: "#dc3545",
-      textAlign: "center",
-      marginBottom: "15px",
-      fontWeight: "600",
+      fontSize: "2.8rem",
+      fontWeight: "700",
+      margin: 0,
     },
     backButton: {
+      background: "#ffffff",
+      color: "#475569",
+      padding: "10px 20px",
+      border: "1px solid #e2e8f0",
+      borderRadius: "10px",
+      fontSize: "0.9rem",
+      fontWeight: "600",
+      cursor: "pointer",
+      textDecoration: "none",
       display: "inline-block",
       marginBottom: "20px",
-      backgroundColor: "#6c757d",
-      color: "#fff",
-      padding: "10px 20px",
-      borderRadius: "6px",
-      textDecoration: "none",
+      transition: "all 0.3s ease",
+    },
+    formContainer: {
+      backgroundColor: "#ffffff",
+      padding: "40px",
+      borderRadius: "20px",
+      boxShadow: "0 20px 60px rgba(0, 0, 0, 0.08)",
+      border: "1px solid #e2e8f0",
+      animation: "fadeInUp 0.8s ease-out",
+    },
+    formGrid: {
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr",
+      gap: "25px",
+    },
+    inputGroup: {
+      display: "flex",
+      flexDirection: "column",
+      gap: "8px",
+    },
+    inputGroupFull: {
+      gridColumn: "1 / -1",
+    },
+    label: {
+      fontSize: "0.875rem",
+      fontWeight: "600",
+      color: "#1e293b",
+    },
+    input: {
+      padding: "14px 18px",
+      border: "2px solid #e2e8f0",
+      borderRadius: "10px",
+      fontSize: "1rem",
+      width: "100%",
+      boxSizing: "border-box",
+      transition: "all 0.3s ease",
+    },
+    select: {
+      padding: "14px 18px",
+      border: "2px solid #e2e8f0",
+      borderRadius: "10px",
+      fontSize: "1rem",
+      width: "100%",
+      boxSizing: "border-box",
+      transition: "all 0.3s ease",
       cursor: "pointer",
+    },
+    submitButton: {
+      background: "linear-gradient(135deg, #023E8A 0%, #0353b8 100%)",
+      color: "#ffffff",
+      padding: "16px",
+      border: "none",
+      borderRadius: "10px",
+      fontSize: "1rem",
+      fontWeight: "600",
+      cursor: "pointer",
+      width: "100%",
+      marginTop: "10px",
+      transition: "all 0.3s ease",
+    },
+    message: {
+      padding: "15px",
+      marginBottom: "20px",
+      borderRadius: "10px",
+      textAlign: "center",
       fontWeight: "500",
+      backgroundColor: "#dcfce7",
+      color: "#166534",
+      border: "1px solid #bbf7d0",
+    },
+    error: {
+      padding: "15px",
+      marginBottom: "20px",
+      borderRadius: "10px",
+      textAlign: "center",
+      fontWeight: "500",
+      backgroundColor: "#fee2e2",
+      color: "#991b1b",
+      border: "1px solid #fecaca",
+    },
+    loadingContainer: {
+      textAlign: "center",
+      padding: "120px 20px",
+      color: "#64748b",
+      fontSize: "1.2rem",
     },
   };
 
+  const styleSheet = `
+    @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    input:focus, select:focus { border-color: #023E8A !important; box-shadow: 0 0 0 3px rgba(2, 62, 138, 0.1) !important; outline: none; }
+    button:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); }
+    button:active { transform: translateY(-1px); }
+  `;
+
   if (loading) {
-    return (
-      <div style={styles.container}>
-        <p style={{ textAlign: "center", color: "#6c757d" }}>Loading sale details...</p>
-      </div>
-    );
+    return <div style={styles.loadingContainer}>Loading...</div>;
   }
 
   return (
     <div style={styles.container}>
-      <button
-        style={styles.backButton}
-        onClick={() => navigate(`/sales/${id}`)}
-      >
-        ← Back to Sale Details
+      <style>{styleSheet}</style>
+
+      <button style={styles.backButton} onClick={() => navigate(`/sales/${id}`)}>
+        ← Back to Details
       </button>
 
-      <h1 style={styles.title}>Edit Sale</h1>
+      <div style={styles.header}>
+        <h1 style={styles.title}>Edit Sale</h1>
+      </div>
 
-      {message && <p style={styles.message}>{message}</p>}
-      {error && <p style={styles.error}>{error}</p>}
+      <div style={styles.formContainer}>
+        {message && <p style={styles.message}>{message}</p>}
+        {error && <p style={styles.error}>{error}</p>}
 
-      <form style={styles.form} onSubmit={handleSubmit}>
-        <label style={styles.label}>Customer Name</label>
-        <input
-          type="text"
-          name="customerName"
-          value={sale.customerName || ""}
-          onChange={handleChange}
-          style={styles.input}
-          required
-        />
+        <form onSubmit={handleSubmit}>
+          <div style={styles.formGrid}>
+            <div style={styles.inputGroup}>
+              <label style={styles.label}>Customer Name</label>
+              <input type="text" name="customerName" value={sale.customerName || ""} onChange={handleChange} style={styles.input} required />
+            </div>
 
-        <label style={styles.label}>Customer Email</label>
-        <input
-          type="email"
-          name="customerEmail"
-          value={sale.customerEmail || ""}
-          onChange={handleChange}
-          style={styles.input}
-          required
-        />
+            <div style={styles.inputGroup}>
+              <label style={styles.label}>Customer Email</label>
+              <input type="email" name="customerEmail" value={sale.customerEmail || ""} onChange={handleChange} style={styles.input} required />
+            </div>
+            
+            <div style={styles.inputGroup}>
+              <label style={styles.label}>Customer Phone</label>
+              <input type="text" name="customerPhone" value={sale.customerPhone || ""} onChange={handleChange} style={styles.input} />
+            </div>
 
-        <label style={styles.label}>Customer Phone</label>
-        <input
-          type="text"
-          name="customerPhone"
-          value={sale.customerPhone || ""}
-          onChange={handleChange}
-          style={styles.input}
-        />
+            <div style={styles.inputGroup}>
+              <label style={styles.label}>Quantity</label>
+              <input type="number" name="quantity" value={sale.quantity || ""} onChange={handleChange} style={styles.input} required />
+            </div>
 
-        <label style={styles.label}>Quantity</label>
-        <input
-          type="number"
-          name="quantity"
-          value={sale.quantity || ""}
-          onChange={handleChange}
-          style={styles.input}
-          required
-        />
+            <div style={styles.inputGroup}>
+              <label style={styles.label}>Price per Unit (LKR)</label>
+              <input type="number" name="pricePerUnit" value={sale.pricePerUnit || ""} onChange={handleChange} style={styles.input} step="0.01" required />
+            </div>
 
-        <label style={styles.label}>Price per Unit (LKR)</label>
-        <input
-          type="number"
-          name="pricePerUnit"
-          value={sale.pricePerUnit || ""}
-          onChange={handleChange}
-          style={styles.input}
-          step="0.01"
-          required
-        />
-
-        <label style={styles.label}>Payment Status</label>
-        <select
-          name="paymentStatus"
-          value={sale.paymentStatus || ""}
-          onChange={handleChange}
-          style={styles.select}
-          required
-        >
-          <option value="">Select Status</option>
-          <option value="Paid">Paid</option>
-          <option value="Pending">Pending</option>
-          <option value="Cancelled">Cancelled</option>
-          <option value="Refunded">Refunded</option>
-        </select>
-
-        <button
-          type="submit"
-          style={styles.button}
-          onMouseEnter={(e) => (e.target.style.backgroundColor = styles.buttonHover.backgroundColor)}
-          onMouseLeave={(e) => (e.target.style.backgroundColor = styles.button.backgroundColor)}
-        >
-          Save Changes
-        </button>
-      </form>
+            <div style={styles.inputGroup}>
+              <label style={styles.label}>Payment Status</label>
+              <select name="paymentStatus" value={sale.paymentStatus || ""} onChange={handleChange} style={styles.select} required>
+                <option value="" disabled>Select Status</option>
+                <option value="Paid">Paid</option>
+                <option value="Pending">Pending</option>
+                <option value="Cancelled">Cancelled</option>
+                <option value="Refunded">Refunded</option>
+              </select>
+            </div>
+            
+            <div style={{...styles.inputGroup, ...styles.inputGroupFull}}>
+              <button type="submit" style={styles.submitButton}>
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };

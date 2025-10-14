@@ -11,6 +11,7 @@ import contactRoutes from "./routes/contactRoutes.js";
 import shipmentRoutes from "./routes/shipmentRoutes.js";
 import emailRoutes from "./routes/emailRoutes.js";
 import deliveryRoutes from "./routes/deliveryRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
 
 dotenv.config();
 
@@ -36,6 +37,7 @@ app.use("/api/products", productRouter);
 app.use("/api/contact", contactRoutes);
 app.use("/api/shipments", shipmentRoutes);
 app.use("/api/deliveries", deliveryRoutes);
+app.use("/api/auth", authRoutes);
 
 // Root endpoint
 app.get("/", (req, res) => {
