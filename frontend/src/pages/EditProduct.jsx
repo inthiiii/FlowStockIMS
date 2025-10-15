@@ -1,7 +1,7 @@
 // src/pages/EditProduct.jsx
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../api.js"; // Using the centralized api instance
 
 const EditProduct = () => {
   const { id } = useParams();
@@ -21,13 +21,16 @@ const EditProduct = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [focusedField, setFocusedField] = useState(null);
+  const [isHovered, setIsHovered] = useState(false);
+
 
   // Fetch existing product
   useEffect(() => {
     const fetchProduct = async () => {
       try {
         setLoading(true);
-        const { data } = await axios.get(`http://localhost:3000/api/products/${id}`);
+        const { data } = await api.get(`/products/${id}`);
         setFormData({
           productName: data.productName,
           productID: data.productID,
@@ -35,13 +38,13 @@ const EditProduct = () => {
           quantity: data.quantity,
           reOrderLevel: data.reOrderLevel,
           modelName: data.modelName,
-          image: null,
+          image: null, // Reset image on load
         });
-        setPreview(data.image ? `http://localhost:3000${data.image}` : "");
+        setPreview(data.image); // The full URL should be handled by the api instance or constructed here
         setError("");
       } catch (err) {
         console.error("Error fetching product:", err);
-        setError("Failed to fetch product details.");
+        setError("Failed to fetch product details. It might have been deleted.");
       } finally {
         setLoading(false);
       }
@@ -73,284 +76,266 @@ const EditProduct = () => {
     setError("");
 
     try {
-      const form = new FormData();
+      const formPayload = new FormData();
+      // Append fields to FormData
       Object.keys(formData).forEach((key) => {
-        if (formData[key] !== null) form.append(key, formData[key]);
+        if (formData[key] !== null) {
+          formPayload.append(key, formData[key]);
+        }
       });
 
-      await axios.put(`http://localhost:3000/api/products/${id}`, form, {
+      await api.put(`/products/${id}`, formPayload, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
       setSuccess(true);
       setTimeout(() => {
         navigate("/products/control");
-      }, 1500);
+      }, 2000);
     } catch (err) {
       console.error("Error updating product:", err);
-      setError("Failed to update product. Please try again.");
+      setError(err.response?.data?.message || "Failed to update product. Please check the details and try again.");
     } finally {
       setSubmitting(false);
     }
   };
 
+  // --- NEW UNIFORM STYLING ---
   const styles = {
     container: {
-      maxWidth: "800px",
+      maxWidth: "900px",
       margin: "0 auto",
-      padding: "40px 20px",
-      backgroundColor: "#ffffff",
+      padding: "50px 30px",
+      background: "linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%)",
       minHeight: "100vh",
-      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
     },
     header: {
       textAlign: "center",
       marginBottom: "40px",
+      animation: "fadeInDown 0.6s ease-out"
     },
     title: {
       color: "#023E8A",
-      fontSize: "2.5rem",
-      fontWeight: "600",
-      margin: "0",
-      marginBottom: "10px",
+      fontSize: "3rem",
+      fontWeight: "700",
+      margin: "0 0 12px 0",
+      letterSpacing: "-1px",
+      textShadow: "0 2px 4px rgba(2, 62, 138, 0.1)"
     },
     subtitle: {
-      color: "#6c757d",
-      fontSize: "1.1rem",
+      color: "#64748b",
+      fontSize: "1.15rem",
       margin: "0",
       fontWeight: "400",
     },
     formContainer: {
-      backgroundColor: "#f8f9fa",
-      padding: "40px",
-      borderRadius: "12px",
-      boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-      border: "1px solid #e9ecef",
+      backgroundColor: "#ffffff",
+      padding: "40px 50px",
+      borderRadius: "20px",
+      border: "1px solid rgba(226, 232, 240, 0.8)",
+      boxShadow: "0 10px 40px rgba(0, 0, 0, 0.08)",
+      animation: "fadeInUp 0.7s ease-out"
     },
     form: {
       display: "flex",
       flexDirection: "column",
-      gap: "25px",
+      gap: "28px",
     },
     formGroup: {
       display: "flex",
       flexDirection: "column",
+      gap: "10px",
     },
     label: {
-      color: "#023E8A",
-      fontSize: "0.95rem",
+      fontSize: "0.9rem",
       fontWeight: "600",
-      marginBottom: "8px",
-      textTransform: "uppercase",
-      letterSpacing: "0.5px",
+      color: "#1e293b",
+      letterSpacing: "0.3px",
     },
     input: {
-      padding: "12px 16px",
-      border: "2px solid #e9ecef",
-      borderRadius: "8px",
+      padding: "14px 18px",
+      border: "2px solid #e2e8f0",
+      borderRadius: "10px",
       fontSize: "1rem",
       fontFamily: "inherit",
-      transition: "all 0.3s ease",
-      backgroundColor: "#ffffff",
+      transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+      backgroundColor: "#f8fafc",
       outline: "none",
-    },
-    textarea: {
-      padding: "12px 16px",
-      border: "2px solid #e9ecef",
-      borderRadius: "8px",
-      fontSize: "1rem",
-      fontFamily: "inherit",
-      transition: "all 0.3s ease",
-      backgroundColor: "#ffffff",
-      outline: "none",
-      resize: "vertical",
-      minHeight: "100px",
-    },
-    fileInput: {
-      padding: "12px 16px",
-      border: "2px dashed #e9ecef",
-      borderRadius: "8px",
-      fontSize: "1rem",
-      backgroundColor: "#ffffff",
-      transition: "all 0.3s ease",
-      cursor: "pointer",
-    },
-    fileInputHover: {
-      borderColor: "#023E8A",
-      backgroundColor: "#f8f9fa",
+      boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)"
     },
     inputFocus: {
       borderColor: "#023E8A",
-      boxShadow: "0 0 0 3px rgba(2, 62, 138, 0.1)",
+      backgroundColor: "#ffffff",
+      boxShadow: "0 0 0 3px rgba(2, 62, 138, 0.1), 0 2px 4px rgba(0, 0, 0, 0.05)",
+    },
+    textarea: {
+        resize: "vertical",
+        minHeight: "120px",
+    },
+    fileInputContainer: {
+      padding: "20px",
+      border: "2px dashed #e2e8f0",
+      borderRadius: "10px",
+      textAlign: 'center',
+      backgroundColor: "#f8fafc",
+      transition: "all 0.3s ease",
+      cursor: "pointer",
+    },
+    fileInputContainerHover: {
+        borderColor: '#023E8A',
+        backgroundColor: '#f0f6ff'
+    },
+    fileInputText: {
+        color: '#64748b',
+        fontWeight: '500',
     },
     formRow: {
       display: "grid",
       gridTemplateColumns: "1fr 1fr",
-      gap: "25px",
-    },
-    imagePreviewContainer: {
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      gap: "15px",
-      marginTop: "15px",
+      gap: "28px",
     },
     imagePreview: {
-      width: "250px",
-      height: "250px",
+      width: "150px",
+      height: "150px",
       objectFit: "cover",
       borderRadius: "12px",
-      border: "3px solid #e9ecef",
-      boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-    },
-    imageLabel: {
-      fontSize: "0.9rem",
-      color: "#6c757d",
-      fontWeight: "500",
+      border: "3px solid #e2e8f0",
+      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+      display: 'block',
+      margin: '20px auto 0'
     },
     button: {
-      backgroundColor: "#023E8A",
+      background: "linear-gradient(135deg, #023E8A 0%, #0353b8 100%)",
       color: "#ffffff",
-      padding: "15px 30px",
+      padding: "16px 32px",
       border: "none",
-      borderRadius: "8px",
+      borderRadius: "12px",
       fontSize: "1.1rem",
       fontWeight: "600",
       cursor: "pointer",
-      transition: "all 0.3s ease",
-      textTransform: "uppercase",
-      letterSpacing: "0.5px",
-      marginTop: "20px",
-      position: "relative",
+      transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: "10px",
+      marginTop: "10px",
+      boxShadow: "0 4px 15px rgba(2, 62, 138, 0.3)",
     },
     buttonHover: {
-      backgroundColor: "#012a5c",
-      transform: "translateY(-2px)",
-      boxShadow: "0 4px 12px rgba(2, 62, 138, 0.3)",
+      transform: "translateY(-3px)",
+      boxShadow: "0 8px 25px rgba(2, 62, 138, 0.4)",
     },
     buttonDisabled: {
-      backgroundColor: "#6c757d",
+      background: "#94a3b8",
       cursor: "not-allowed",
-      transform: "none",
       boxShadow: "none",
+      transform: 'none',
     },
     loadingContainer: {
-      textAlign: "center",
-      padding: "80px 20px",
-      color: "#6c757d",
+        textAlign: "center",
+        padding: "100px 20px",
     },
     loadingSpinner: {
-      width: "50px",
-      height: "50px",
-      border: "4px solid #f3f3f3",
-      borderTop: "4px solid #023E8A",
-      borderRadius: "50%",
-      animation: "spin 1s linear infinite",
-      marginBottom: "20px",
-      margin: "0 auto 20px auto",
+        width: "60px",
+        height: "60px",
+        border: "5px solid #e2e8f0",
+        borderTop: "5px solid #023E8A",
+        borderRadius: "50%",
+        animation: "spin 1s linear infinite",
+        margin: "0 auto 25px auto",
     },
     loadingText: {
-      fontSize: "1.2rem",
-      fontWeight: "500",
+        color: "#64748b",
+        fontSize: "1.2rem",
+        fontWeight: "500"
+    },
+    message: {
+        padding: "16px 20px",
+        borderRadius: "10px",
+        border: "1px solid transparent",
+        fontSize: "1rem",
+        fontWeight: "500",
+        marginBottom: "20px",
+        textAlign: "center",
     },
     errorMessage: {
-      backgroundColor: "#f8d7da",
-      color: "#721c24",
-      padding: "12px 16px",
-      borderRadius: "8px",
-      border: "1px solid #f5c6cb",
-      fontSize: "0.95rem",
-      fontWeight: "500",
-      marginBottom: "20px",
-      textAlign: "center",
+        backgroundColor: "rgba(239, 68, 68, 0.1)",
+        color: "#b91c1c",
+        borderColor: "rgba(239, 68, 68, 0.2)",
     },
     successMessage: {
-      backgroundColor: "#d1edff",
-      color: "#0c5460",
-      padding: "12px 16px",
-      borderRadius: "8px",
-      border: "1px solid #bee5eb",
-      fontSize: "0.95rem",
-      fontWeight: "500",
-      marginBottom: "20px",
-      textAlign: "center",
+        backgroundColor: "rgba(34, 197, 94, 0.1)",
+        color: "#15803d",
+        borderColor: "rgba(34, 197, 94, 0.2)",
     },
     buttonSpinner: {
-      display: "inline-block",
-      width: "20px",
-      height: "20px",
-      border: "2px solid #ffffff",
-      borderTop: "2px solid transparent",
-      borderRadius: "50%",
-      animation: "spin 1s linear infinite",
-      marginRight: "10px",
+        width: "22px",
+        height: "22px",
+        border: "3px solid rgba(255, 255, 255, 0.3)",
+        borderTopColor: "#ffffff",
+        borderRadius: "50%",
+        animation: "spin 0.8s linear infinite",
     },
     backButton: {
-      backgroundColor: "#6c757d",
-      color: "#ffffff",
+      background: 'transparent',
+      color: "#64748b",
+      border: "2px solid #e2e8f0",
       padding: "10px 20px",
-      border: "none",
-      borderRadius: "6px",
-      fontSize: "0.9rem",
-      fontWeight: "500",
+      borderRadius: "10px",
+      fontSize: "0.95rem",
+      fontWeight: "600",
       cursor: "pointer",
       transition: "all 0.3s ease",
-      marginBottom: "20px",
+      marginBottom: "30px",
       textDecoration: "none",
-      display: "inline-block",
+      display: "inline-flex",
+      alignItems: 'center',
+      gap: '8px'
     },
     backButtonHover: {
-      backgroundColor: "#5a6268",
+        borderColor: '#023E8A',
+        backgroundColor: '#ffffff',
+        color: '#023E8A'
     },
     requiredIndicator: {
-      color: "#dc3545",
+      color: "#ef4444",
       marginLeft: "4px",
-      fontWeight: "bold",
-    },
-    helpText: {
-      fontSize: "0.85rem",
-      color: "#6c757d",
-      marginTop: "5px",
-      fontStyle: "italic",
     },
   };
+  
+  const styleSheet = `
+    @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    input::placeholder, textarea::placeholder { color: #94a3b8; }
+  `;
 
   if (loading) {
     return (
       <div style={styles.container}>
+        <style>{styleSheet}</style>
         <div style={styles.loadingContainer}>
           <div style={styles.loadingSpinner}></div>
-          <div style={styles.loadingText}>Loading product details...</div>
-          <style>
-            {`
-              @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-              }
-            `}
-          </style>
+          <div style={styles.loadingText}>Loading Product Details...</div>
         </div>
       </div>
     );
   }
 
+  // Render error state if fetching failed
   if (error && !formData.productName) {
     return (
       <div style={styles.container}>
-        <div style={styles.errorMessage}>
+         <style>{styleSheet}</style>
+        <div style={{...styles.message, ...styles.errorMessage}}>
           <strong>Error:</strong> {error}
         </div>
-        <button 
+        <button
           style={styles.backButton}
           onClick={() => navigate("/products/control")}
-          onMouseEnter={(e) => {
-            e.target.style.backgroundColor = styles.backButtonHover.backgroundColor;
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.backgroundColor = styles.backButton.backgroundColor;
-          }}
         >
-          Back to Product
+          ← Back to Products List
         </button>
       </div>
     );
@@ -358,271 +343,118 @@ const EditProduct = () => {
 
   return (
     <div style={styles.container}>
-      <button 
+      <style>{styleSheet}</style>
+      
+      <button
         style={styles.backButton}
         onClick={() => navigate("/products/control")}
-        onMouseEnter={(e) => {
-          e.target.style.backgroundColor = styles.backButtonHover.backgroundColor;
-        }}
-        onMouseLeave={(e) => {
-          e.target.style.backgroundColor = styles.backButton.backgroundColor;
-        }}
       >
-        ← Back to Products
+        ← Back to Products List
       </button>
 
-      <div style={styles.header}>
-        <h1 style={styles.title}>Edit Product</h1>
-        <p style={styles.subtitle}>Update product information and details</p>
-      </div>
+      <header style={styles.header}>
+        <h1 style={styles.title}>Edit Product Details</h1>
+        <p style={styles.subtitle}>Update the information for "{formData.productName}"</p>
+      </header>
 
       <div style={styles.formContainer}>
-        {error && (
-          <div style={styles.errorMessage}>
-            <strong>Error:</strong> {error}
-          </div>
-        )}
-
-        {success && (
-          <div style={styles.successMessage}>
-            <strong>Success:</strong> Product updated successfully! Redirecting...
-          </div>
-        )}
+        {error && <div style={{...styles.message, ...styles.errorMessage}}>{error}</div>}
+        {success && <div style={{...styles.message, ...styles.successMessage}}>Product updated successfully! Redirecting...</div>}
 
         <form onSubmit={handleSubmit} style={styles.form}>
-          <div style={styles.formRow}>
+          <div style={{...styles.formRow, gridTemplateColumns: '2fr 1fr'}}>
             <div style={styles.formGroup}>
-              <label style={styles.label}>
-                Product Name<span style={styles.requiredIndicator}>*</span>
-              </label>
+              <label style={styles.label}>Product Name<span style={styles.requiredIndicator}>*</span></label>
               <input
-                type="text"
-                name="productName"
-                placeholder="Enter product name"
-                value={formData.productName}
-                onChange={handleChange}
-                required
-                style={styles.input}
-                onFocus={(e) => {
-                  e.target.style.borderColor = styles.inputFocus.borderColor;
-                  e.target.style.boxShadow = styles.inputFocus.boxShadow;
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = styles.input.borderColor;
-                  e.target.style.boxShadow = "none";
-                }}
-                disabled={submitting}
+                type="text" name="productName" value={formData.productName} onChange={handleChange}
+                required disabled={submitting}
+                style={{...styles.input, ...(focusedField === 'productName' && styles.inputFocus)}}
+                onFocus={() => setFocusedField('productName')} onBlur={() => setFocusedField(null)}
               />
-              <p style={styles.helpText}>Enter the product's display name</p>
             </div>
 
             <div style={styles.formGroup}>
-              <label style={styles.label}>
-                Product ID<span style={styles.requiredIndicator}>*</span>
-              </label>
+              <label style={styles.label}>Product ID<span style={styles.requiredIndicator}>*</span></label>
               <input
-                type="text"
-                name="productID"
-                placeholder="Enter product ID"
-                value={formData.productID}
-                onChange={handleChange}
-                required
-                style={styles.input}
-                onFocus={(e) => {
-                  e.target.style.borderColor = styles.inputFocus.borderColor;
-                  e.target.style.boxShadow = styles.inputFocus.boxShadow;
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = styles.input.borderColor;
-                  e.target.style.boxShadow = "none";
-                }}
-                disabled={submitting}
+                type="text" name="productID" value={formData.productID} onChange={handleChange}
+                required disabled={submitting}
+                style={{...styles.input, ...(focusedField === 'productID' && styles.inputFocus)}}
+                onFocus={() => setFocusedField('productID')} onBlur={() => setFocusedField(null)}
               />
-              <p style={styles.helpText}>Unique identifier for the product</p>
             </div>
           </div>
 
           <div style={styles.formGroup}>
             <label style={styles.label}>Description</label>
             <textarea
-              name="description"
-              placeholder="Enter product description..."
-              value={formData.description}
-              onChange={handleChange}
-              style={styles.textarea}
-              onFocus={(e) => {
-                e.target.style.borderColor = styles.inputFocus.borderColor;
-                e.target.style.boxShadow = styles.inputFocus.boxShadow;
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = styles.textarea.borderColor;
-                e.target.style.boxShadow = "none";
-              }}
+              name="description" value={formData.description} onChange={handleChange}
               disabled={submitting}
+              style={{...styles.input, ...styles.textarea, ...(focusedField === 'description' && styles.inputFocus)}}
+              onFocus={() => setFocusedField('description')} onBlur={() => setFocusedField(null)}
             />
-            <p style={styles.helpText}>Detailed description of the product</p>
           </div>
 
           <div style={styles.formRow}>
             <div style={styles.formGroup}>
-              <label style={styles.label}>
-                Quantity<span style={styles.requiredIndicator}>*</span>
-              </label>
+              <label style={styles.label}>Quantity<span style={styles.requiredIndicator}>*</span></label>
               <input
-                type="number"
-                name="quantity"
-                placeholder="Available quantity"
-                value={formData.quantity}
-                onChange={handleChange}
-                required
-                min="0"
-                style={styles.input}
-                onFocus={(e) => {
-                  e.target.style.borderColor = styles.inputFocus.borderColor;
-                  e.target.style.boxShadow = styles.inputFocus.boxShadow;
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = styles.input.borderColor;
-                  e.target.style.boxShadow = "none";
-                }}
-                disabled={submitting}
+                type="number" name="quantity" value={formData.quantity} onChange={handleChange}
+                required min="0" disabled={submitting}
+                style={{...styles.input, ...(focusedField === 'quantity' && styles.inputFocus)}}
+                onFocus={() => setFocusedField('quantity')} onBlur={() => setFocusedField(null)}
               />
-              <p style={styles.helpText}>Current stock quantity</p>
             </div>
 
             <div style={styles.formGroup}>
-              <label style={styles.label}>
-                Reorder Level<span style={styles.requiredIndicator}>*</span>
-              </label>
+              <label style={styles.label}>Reorder Level<span style={styles.requiredIndicator}>*</span></label>
               <input
-                type="number"
-                name="reOrderLevel"
-                placeholder="Reorder level"
-                value={formData.reOrderLevel}
-                onChange={handleChange}
-                required
-                min="1"
-                style={styles.input}
-                onFocus={(e) => {
-                  e.target.style.borderColor = styles.inputFocus.borderColor;
-                  e.target.style.boxShadow = styles.inputFocus.boxShadow;
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = styles.input.borderColor;
-                  e.target.style.boxShadow = "none";
-                }}
-                disabled={submitting}
+                type="number" name="reOrderLevel" value={formData.reOrderLevel} onChange={handleChange}
+                required min="0" disabled={submitting}
+                style={{...styles.input, ...(focusedField === 'reOrderLevel' && styles.inputFocus)}}
+                onFocus={() => setFocusedField('reOrderLevel')} onBlur={() => setFocusedField(null)}
               />
-              <p style={styles.helpText}>Minimum stock before reordering</p>
             </div>
           </div>
-
+          
           <div style={styles.formGroup}>
-            <label style={styles.label}>
-              Model Name<span style={styles.requiredIndicator}>*</span>
-            </label>
+            <label style={styles.label}>Model Name<span style={styles.requiredIndicator}>*</span></label>
             <input
-              type="text"
-              name="modelName"
-              placeholder="Enter model name"
-              value={formData.modelName}
-              onChange={handleChange}
-              required
-              style={styles.input}
-              onFocus={(e) => {
-                e.target.style.borderColor = styles.inputFocus.borderColor;
-                e.target.style.boxShadow = styles.inputFocus.boxShadow;
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = styles.input.borderColor;
-                e.target.style.boxShadow = "none";
-              }}
-              disabled={submitting}
+              type="text" name="modelName" value={formData.modelName} onChange={handleChange}
+              required disabled={submitting}
+              style={{...styles.input, ...(focusedField === 'modelName' && styles.inputFocus)}}
+              onFocus={() => setFocusedField('modelName')} onBlur={() => setFocusedField(null)}
             />
-            <p style={styles.helpText}>Product model or variant name</p>
           </div>
 
           <div style={styles.formGroup}>
             <label style={styles.label}>Product Image</label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              style={styles.fileInput}
-              onMouseEnter={(e) => {
-                if (!submitting) {
-                  e.target.style.borderColor = styles.fileInputHover.borderColor;
-                  e.target.style.backgroundColor = styles.fileInputHover.backgroundColor;
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!submitting) {
-                  e.target.style.borderColor = styles.fileInput.borderColor;
-                  e.target.style.backgroundColor = styles.fileInput.backgroundColor;
-                }
-              }}
-              disabled={submitting}
-            />
-            <p style={styles.helpText}>Upload a new image to replace the current one (optional)</p>
-            
-            {preview && (
-              <div style={styles.imagePreviewContainer}>
-                <img
-                  src={preview}
-                  alt="Product Preview"
-                  style={styles.imagePreview}
-                />
-                <span style={styles.imageLabel}>
-                  {formData.image ? "New Image Preview" : "Current Product Image"}
-                </span>
-              </div>
-            )}
+            <label 
+              style={{...styles.fileInputContainer, ...(isHovered && styles.fileInputContainerHover)}}
+              onMouseEnter={() => setIsHovered(true)}
+              onMouseLeave={() => setIsHovered(false)}
+            >
+              <span style={styles.fileInputText}>
+                {formData.image ? `Selected: ${formData.image.name}` : "Click to upload a new image (optional)"}
+              </span>
+              <input type="file" accept="image/*" onChange={handleFileChange} disabled={submitting} hidden />
+            </label>
+
+            {preview && <img src={preview} alt="Product Preview" style={styles.imagePreview} />}
           </div>
 
-          <button 
-            type="submit" 
-            style={{
-              ...styles.button,
-              ...(submitting ? styles.buttonDisabled : {})
-            }}
-            onMouseEnter={(e) => {
-              if (!submitting) {
-                e.target.style.backgroundColor = styles.buttonHover.backgroundColor;
-                e.target.style.transform = styles.buttonHover.transform;
-                e.target.style.boxShadow = styles.buttonHover.boxShadow;
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!submitting) {
-                e.target.style.backgroundColor = styles.button.backgroundColor;
-                e.target.style.transform = "none";
-                e.target.style.boxShadow = "none";
-              }
-            }}
+          <button
+            type="submit"
             disabled={submitting}
+            style={{ ...styles.button, ...(submitting && styles.buttonDisabled) }}
           >
             {submitting && <span style={styles.buttonSpinner}></span>}
-            {submitting ? "Updating Product..." : "Update Product"}
+            {submitting ? "Saving Changes..." : "Update Product"}
           </button>
         </form>
       </div>
-
-      <style>
-        {`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-          
-          @media (max-width: 768px) {
-            .form-row {
-              grid-template-columns: 1fr !important;
-            }
-          }
-        `}
-      </style>
     </div>
   );
 };
 
 export default EditProduct;
+

@@ -1,19 +1,21 @@
 // src/pages/FavoritesPage.jsx
 import React, { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
-import api from "../api.js";
+import api from "../api";
 
 export default function FavoritesPage() {
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
-  const load = async () => {
+  const loadFavorites = async () => {
     try {
       setLoading(true);
       setError("");
       const res = await api.get("/products/favorites");
-      setFavorites(res.data);
+      setFavorites(res.data || []);
     } catch (err) {
       console.error(err);
       setError("Failed to load favorites. Please try again.");
@@ -23,201 +25,184 @@ export default function FavoritesPage() {
   };
 
   useEffect(() => {
-    load();
+    loadFavorites();
   }, []);
 
   const styles = {
     container: {
-      maxWidth: "1400px",
+      maxWidth: "1600px",
       margin: "0 auto",
-      padding: "40px 20px",
-      backgroundColor: "#ffffff",
+      padding: "50px 30px",
+      background: "linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%)",
       minHeight: "100vh",
-      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
     },
     header: {
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      marginBottom: "40px",
-      flexWrap: "wrap",
-      gap: "20px",
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: "50px",
+      animation: "fadeInDown 0.6s ease-out"
     },
-    titleSection: {
-      display: "flex",
-      alignItems: "center",
-      gap: "15px",
-    },
-    icon: {
-      fontSize: "2.5rem",
-      color: "#dc3545",
-    },
-    titleGroup: {
-      display: "flex",
-      flexDirection: "column",
+    headerText: {
+        textAlign: 'left',
     },
     title: {
       color: "#023E8A",
-      fontSize: "2.5rem",
-      fontWeight: "600",
-      margin: "0",
+      fontSize: "3rem",
+      fontWeight: "700",
+      margin: "0 0 12px 0",
+      letterSpacing: "-1px",
+      textShadow: "0 2px 4px rgba(2, 62, 138, 0.1)"
     },
     subtitle: {
-      color: "#6c757d",
-      fontSize: "1.1rem",
+      color: "#64748b",
+      fontSize: "1.15rem",
       margin: "0",
       fontWeight: "400",
     },
     backButton: {
-      backgroundColor: "#023E8A",
-      color: "#ffffff",
+      background: "linear-gradient(135deg, #023E8A 0%, #0353b8 100%)",
+      color: "#fff",
       padding: "12px 24px",
-      borderRadius: "8px",
-      textDecoration: "none",
-      fontSize: "1rem",
+      border: "none",
+      borderRadius: "10px",
+      cursor: "pointer",
       fontWeight: "600",
-      transition: "all 0.3s ease",
-      display: "inline-block",
-      textTransform: "uppercase",
-      letterSpacing: "0.5px",
-    },
-    backButtonHover: {
-      backgroundColor: "#012a5c",
-      transform: "translateY(-2px)",
+      fontSize: "0.95rem",
+      transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
       boxShadow: "0 4px 12px rgba(2, 62, 138, 0.3)",
-    },
-    statsBar: {
-      backgroundColor: "#f8f9fa",
-      padding: "20px 25px",
-      borderRadius: "12px",
-      marginBottom: "30px",
-      border: "1px solid #e9ecef",
-      display: "flex",
-      justifyContent: "space-between",
+      textDecoration: 'none',
+      display: "inline-flex",
       alignItems: "center",
-      flexWrap: "wrap",
-      gap: "15px",
+      gap: "8px"
     },
-    statsText: {
-      color: "#495057",
-      fontSize: "1rem",
-      fontWeight: "500",
+    statCard: {
+      background: "linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)",
+      padding: "25px",
+      borderRadius: "16px",
+      border: "1px solid #e2e8f0",
+      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)",
+      transition: "all 0.3s ease",
+      animation: "scaleIn 0.5s ease-out",
+      marginBottom: '35px',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '20px'
     },
-    statsNumber: {
+    statIcon: {
+        fontSize: "2.5rem",
+        color: '#f59e0b' // A nice gold/yellow for favorites
+    },
+    statValue: {
+      fontSize: "2.5rem",
       color: "#023E8A",
       fontWeight: "700",
-      fontSize: "1.2rem",
+    },
+    statLabel: {
+      fontSize: "1rem",
+      color: "#64748b",
+      fontWeight: "500",
     },
     productsGrid: {
       display: "grid",
-      gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-      gap: "25px",
+      gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
+      gap: "30px",
+      animation: "fadeInUp 0.8s ease-out"
     },
     loadingContainer: {
       textAlign: "center",
-      padding: "80px 20px",
-      color: "#6c757d",
+      padding: "100px 20px",
     },
     loadingSpinner: {
-      width: "50px",
-      height: "50px",
-      border: "4px solid #f3f3f3",
-      borderTop: "4px solid #023E8A",
-      borderRadius: "50%",
-      animation: "spin 1s linear infinite",
-      margin: "0 auto 20px auto",
+        width: "60px",
+        height: "60px",
+        border: "5px solid #e2e8f0",
+        borderTop: "5px solid #023E8A",
+        borderRadius: "50%",
+        animation: "spin 1s linear infinite",
+        margin: "0 auto 25px auto",
     },
     loadingText: {
+      color: "#64748b",
       fontSize: "1.2rem",
-      fontWeight: "500",
+      fontWeight: "500"
     },
-    emptyState: {
+    emptyStateContainer: {
       textAlign: "center",
-      padding: "80px 20px",
-      backgroundColor: "#f8f9fa",
-      borderRadius: "15px",
-      border: "2px dashed #e9ecef",
+      padding: "80px 40px",
+      backgroundColor: "#ffffff",
+      borderRadius: "20px",
+      boxShadow: "0 10px 40px rgba(0, 0, 0, 0.06)",
+      border: "1px solid #e2e8f0",
+      animation: "fadeInUp 0.7s ease-out"
     },
     emptyIcon: {
-      fontSize: "5rem",
-      marginBottom: "20px",
-      opacity: "0.3",
+      fontSize: "4.5rem",
+      marginBottom: "25px",
+      color: '#023E8A',
+      opacity: '0.6'
     },
     emptyTitle: {
-      fontSize: "1.8rem",
-      fontWeight: "600",
-      color: "#495057",
+      color: "#1e293b",
+      fontSize: "2rem",
+      fontWeight: "700",
       marginBottom: "15px",
     },
     emptyText: {
+      color: "#64748b",
       fontSize: "1.1rem",
-      color: "#6c757d",
       marginBottom: "30px",
-      lineHeight: "1.6",
+      lineHeight: "1.7",
+      maxWidth: '500px',
+      margin: '0 auto 30px auto'
     },
     emptyButton: {
-      backgroundColor: "#023E8A",
+      background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
       color: "#ffffff",
-      padding: "15px 30px",
-      borderRadius: "8px",
-      textDecoration: "none",
-      fontSize: "1.1rem",
-      fontWeight: "600",
-      transition: "all 0.3s ease",
-      display: "inline-block",
-      textTransform: "uppercase",
-      letterSpacing: "0.5px",
-    },
-    emptyButtonHover: {
-      backgroundColor: "#012a5c",
-      transform: "translateY(-2px)",
-      boxShadow: "0 4px 12px rgba(2, 62, 138, 0.3)",
-    },
-    errorContainer: {
-      backgroundColor: "#f8d7da",
-      color: "#721c24",
-      padding: "20px",
-      borderRadius: "12px",
-      border: "1px solid #f5c6cb",
-      marginBottom: "30px",
-      textAlign: "center",
-    },
-    errorTitle: {
-      fontSize: "1.2rem",
-      fontWeight: "600",
-      marginBottom: "10px",
-    },
-    retryButton: {
-      backgroundColor: "#dc3545",
-      color: "#ffffff",
-      padding: "10px 20px",
-      borderRadius: "6px",
+      padding: "14px 32px",
       border: "none",
-      cursor: "pointer",
-      fontSize: "0.95rem",
+      borderRadius: "10px",
+      fontSize: "1rem",
       fontWeight: "600",
-      transition: "all 0.3s ease",
-      marginTop: "10px",
+      cursor: "pointer",
+      transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+      textDecoration: "none",
+      display: "inline-flex",
+      alignItems: "center",
+      gap: "8px",
+      boxShadow: "0 4px 12px rgba(16, 185, 129, 0.3)"
     },
-    retryButtonHover: {
-      backgroundColor: "#c82333",
+    errorMessage: {
+        backgroundColor: "rgba(239, 68, 68, 0.1)",
+        color: "#b91c1c",
+        borderColor: "rgba(239, 68, 68, 0.2)",
+        padding: "16px 20px",
+        borderRadius: "10px",
+        border: "1px solid",
+        fontSize: "1rem",
+        fontWeight: "500",
+        marginBottom: "20px",
+        textAlign: "center",
     },
   };
+
+  const styleSheet = `
+    @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .action-button:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(2, 62, 138, 0.2); }
+    .action-button:active { transform: translateY(0); box-shadow: 0 4px 12px rgba(2, 62, 138, 0.3); }
+  `;
 
   if (loading) {
     return (
       <div style={styles.container}>
+        <style>{styleSheet}</style>
         <div style={styles.loadingContainer}>
           <div style={styles.loadingSpinner}></div>
-          <div style={styles.loadingText}>Loading your favorites...</div>
-          <style>
-            {`
-              @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-              }
-            `}
-          </style>
+          <div style={styles.loadingText}>Loading Your Favorite Products...</div>
         </div>
       </div>
     );
@@ -225,108 +210,50 @@ export default function FavoritesPage() {
 
   return (
     <div style={styles.container}>
-      {/* Header */}
-      <div style={styles.header}>
-        <div style={styles.titleSection}>
-          <span style={styles.icon}></span>
-          <div style={styles.titleGroup}>
-            <h1 style={styles.title}>My Favorites</h1>
-            <p style={styles.subtitle}>Your saved motorcycle spare parts</p>
-          </div>
+      <style>{styleSheet}</style>
+      
+      <header style={styles.header}>
+        <div style={styles.headerText}>
+          <h1 style={styles.title}>My Favorites</h1>
+          <p style={styles.subtitle}>Your hand-picked collection of essential parts</p>
         </div>
-        <a
-          href="/"
-          style={styles.backButton}
-          onMouseEnter={(e) => {
-            e.target.style.backgroundColor = styles.backButtonHover.backgroundColor;
-            e.target.style.transform = styles.backButtonHover.transform;
-            e.target.style.boxShadow = styles.backButtonHover.boxShadow;
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.backgroundColor = styles.backButton.backgroundColor;
-            e.target.style.transform = "none";
-            e.target.style.boxShadow = "none";
-          }}
-        >
-          ← Back to Products
-        </a>
-      </div>
+        <Link to="/products/list" style={styles.backButton} className="action-button">
+          ← Back to All Products
+        </Link>
+      </header>
 
-      {/* Error Message */}
-      {error && (
-        <div style={styles.errorContainer}>
-          <div style={styles.errorTitle}>Error</div>
-          <p>{error}</p>
-          <button
-            style={styles.retryButton}
-            onClick={load}
-            onMouseEnter={(e) => {
-              e.target.style.backgroundColor = styles.retryButtonHover.backgroundColor;
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.backgroundColor = styles.retryButton.backgroundColor;
-            }}
-          >
-            Retry
-          </button>
-        </div>
-      )}
+      {error && <div style={styles.errorMessage}><strong>Error:</strong> {error}</div>}
 
-      {/* Stats Bar */}
       {!error && favorites.length > 0 && (
-        <div style={styles.statsBar}>
-          <span style={styles.statsText}>
-            Total Favorites: <span style={styles.statsNumber}>{favorites.length}</span>
-          </span>
-          <span style={styles.statsText}>
-            Keep adding products you love!
-          </span>
+        <div style={styles.statCard}>
+            <div style={styles.statIcon}>★</div>
+            <div>
+                <div style={styles.statValue}>{favorites.length}</div>
+                <div style={styles.statLabel}>Total Favorite Items</div>
+            </div>
         </div>
       )}
-
-      {/* Empty State */}
+      
       {!error && favorites.length === 0 ? (
-        <div style={styles.emptyState}>
+        <div style={styles.emptyStateContainer}>
           <div style={styles.emptyIcon}>💔</div>
-          <h2 style={styles.emptyTitle}>No Favorites Yet</h2>
+          <h2 style={styles.emptyTitle}>Your Favorites List is Empty</h2>
           <p style={styles.emptyText}>
-            Start building your collection of favorite motorcycle spare parts!<br />
-            Browse our products and click the heart icon to save items here.
+            You haven't added any favorite parts yet. Browse our catalog and click the star icon to save items here for easy access.
           </p>
-          <a
-            href="/"
-            style={styles.emptyButton}
-            onMouseEnter={(e) => {
-              e.target.style.backgroundColor = styles.emptyButtonHover.backgroundColor;
-              e.target.style.transform = styles.emptyButtonHover.transform;
-              e.target.style.boxShadow = styles.emptyButtonHover.boxShadow;
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.backgroundColor = styles.emptyButton.backgroundColor;
-              e.target.style.transform = "none";
-              e.target.style.boxShadow = "none";
-            }}
-          >
+          <Link to="/products/list" style={styles.emptyButton} className="action-button">
             Browse Products
-          </a>
+          </Link>
         </div>
       ) : (
-        /* Products Grid */
         <div style={styles.productsGrid}>
           {favorites.map((p) => (
-            <ProductCard key={p._id} product={p} onUpdated={() => load()} />
+            <ProductCard key={p._id} product={p} onUpdated={loadFavorites} />
           ))}
         </div>
       )}
-
-      <style>
-        {`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `}
-      </style>
     </div>
   );
 }
+
+
