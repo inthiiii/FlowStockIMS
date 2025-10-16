@@ -9,27 +9,98 @@ const ContactPage = () => {
     message: "",
   });
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const [notification, setNotification] = useState(null); // { type: 'success' | 'error', message: '' }
   const [focusedInput, setFocusedInput] = useState(null);
   const [hoveredSocial, setHoveredSocial] = useState(null);
+  const [errors, setErrors] = useState({});
 
-  const handleChange = (e) =>
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    
+    // Phone number validation - only allow digits and limit to 10
+    if (name === "number") {
+      const digitsOnly = value.replace(/\D/g, ''); // Remove non-digits
+      if (digitsOnly.length <= 10) {
+        setFormData({ ...formData, [name]: digitsOnly });
+        // Clear error when user starts typing correctly
+        if (errors.number) {
+          setErrors({ ...errors, number: null });
+        }
+      }
+      return;
+    }
+    
+    setFormData({ ...formData, [name]: value });
+    // Clear error for the field being edited
+    if (errors[name]) {
+      setErrors({ ...errors, [name]: null });
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    
+    // Name validation
+    if (!formData.name.trim()) {
+      newErrors.name = "Name is required";
+    } else if (formData.name.trim().length < 2) {
+      newErrors.name = "Name must be at least 2 characters";
+    }
+    
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!emailRegex.test(formData.email)) {
+      newErrors.email = "Please enter a valid email address";
+    }
+    
+    // Phone validation
+    if (!formData.number) {
+      newErrors.number = "Phone number is required";
+    } else if (formData.number.length !== 10) {
+      newErrors.number = "Phone number must be exactly 10 digits";
+    } else if (!/^\d{10}$/.test(formData.number)) {
+      newErrors.number = "Phone number must contain only digits";
+    }
+    
+    // Message validation
+    if (!formData.message.trim()) {
+      newErrors.message = "Message is required";
+    } else if (formData.message.trim().length < 10) {
+      newErrors.message = "Message must be at least 10 characters";
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const showNotification = (type, message) => {
+    setNotification({ type, message });
+    setTimeout(() => {
+      setNotification(null);
+    }, 5000);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate form before submission
+    if (!validateForm()) {
+      showNotification('error', 'Please fix the errors in the form');
+      return;
+    }
+    
     setLoading(true);
 
     try {
       await contactService.sendMessage(formData);
-      setSuccess(true);
+      showNotification('success', 'Message sent successfully! We\'ll get back to you soon.');
       setFormData({ name: "", email: "", number: "", message: "" });
-      setTimeout(() => setSuccess(false), 5000);
+      setErrors({});
     } catch (err) {
-      setSuccess(true);
-      setFormData({ name: "", email: "", number: "", message: "" });
-      setTimeout(() => setSuccess(false), 5000);
       console.error(err);
+      showNotification('error', 'Failed to send message. Please try again later.');
     } finally {
       setLoading(false);
     }
@@ -43,6 +114,52 @@ const ContactPage = () => {
       backgroundColor: "#ffffff",
       minHeight: "100vh",
       fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+    },
+
+    // Notification Popup
+    notificationContainer: {
+      position: "fixed",
+      top: "20px",
+      right: "20px",
+      zIndex: 9999,
+      maxWidth: "400px",
+      animation: "slideInRight 0.4s ease-out",
+    },
+    notification: {
+      padding: "20px 24px",
+      borderRadius: "16px",
+      boxShadow: "0 10px 40px rgba(0, 0, 0, 0.15)",
+      display: "flex",
+      alignItems: "center",
+      gap: "12px",
+      fontWeight: "600",
+      fontSize: "1rem",
+      border: "2px solid",
+    },
+    notificationSuccess: {
+      background: "linear-gradient(135d, #d1fae5 0%, #a7f3d0 100%)",
+      color: "#065f46",
+      borderColor: "#6ee7b7",
+    },
+    notificationError: {
+      background: "linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)",
+      color: "#991b1b",
+      borderColor: "#fca5a5",
+    },
+    notificationIcon: {
+      fontSize: "1.5rem",
+      flexShrink: 0,
+    },
+    notificationClose: {
+      marginLeft: "auto",
+      background: "none",
+      border: "none",
+      fontSize: "1.2rem",
+      cursor: "pointer",
+      padding: "4px",
+      lineHeight: "1",
+      opacity: "0.7",
+      transition: "opacity 0.2s",
     },
 
     // Hero Section
@@ -198,6 +315,9 @@ const ContactPage = () => {
       outline: "none",
       color: "#1e293b",
     },
+    inputError: {
+      borderColor: "#ef4444",
+    },
     textarea: {
       padding: "18px 24px",
       border: "2px solid #e2e8f0",
@@ -215,6 +335,21 @@ const ContactPage = () => {
       borderColor: "#0077B6",
       boxShadow: "0 0 0 4px rgba(0, 119, 182, 0.1)",
       transform: "translateY(-2px)",
+    },
+    errorMessage: {
+      color: "#ef4444",
+      fontSize: "0.875rem",
+      marginTop: "6px",
+      fontWeight: "500",
+      display: "flex",
+      alignItems: "center",
+      gap: "4px",
+    },
+    charCount: {
+      fontSize: "0.75rem",
+      color: "#94a3b8",
+      marginTop: "4px",
+      textAlign: "right",
     },
     button: {
       background: "linear-gradient(135deg, #023E8A 0%, #0077B6 100%)",
@@ -237,22 +372,6 @@ const ContactPage = () => {
       cursor: "not-allowed",
       transform: "none",
       boxShadow: "0 4px 15px rgba(100, 116, 139, 0.2)",
-    },
-    successMessage: {
-      background: "linear-gradient(135deg, #d1f4e0 0%, #c3f0d8 100%)",
-      color: "#065f46",
-      padding: "20px 24px",
-      borderRadius: "16px",
-      border: "2px solid #86efac",
-      fontSize: "1rem",
-      fontWeight: "600",
-      marginBottom: "24px",
-      textAlign: "center",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: "12px",
-      boxShadow: "0 4px 15px rgba(16, 185, 129, 0.2)",
     },
     loadingSpinner: {
       display: "inline-block",
@@ -393,6 +512,29 @@ const ContactPage = () => {
 
   return (
     <div style={styles.container}>
+      {/* Notification Popup */}
+      {notification && (
+        <div style={styles.notificationContainer}>
+          <div style={{
+            ...styles.notification,
+            ...(notification.type === 'success' ? styles.notificationSuccess : styles.notificationError)
+          }}>
+            <span style={styles.notificationIcon}>
+              {notification.type === 'success' ? '✅' : '❌'}
+            </span>
+            <span style={{flex: 1}}>{notification.message}</span>
+            <button 
+              style={styles.notificationClose}
+              onClick={() => setNotification(null)}
+              onMouseEnter={(e) => e.target.style.opacity = '1'}
+              onMouseLeave={(e) => e.target.style.opacity = '0.7'}
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Hero Section */}
       <div style={styles.hero}>
         <div style={{...styles.heroDecoration, ...styles.heroDecorationTop}}></div>
@@ -491,13 +633,6 @@ const ContactPage = () => {
         {/* Contact Form */}
         <div style={styles.formContainer}>
           <h3 style={styles.sectionTitle}>Send Us a Message</h3>
-          
-          {success && (
-            <div style={styles.successMessage}>
-              <span style={{fontSize: "1.5rem"}}>✅</span>
-              <span>Message sent successfully! We'll get back to you soon.</span>
-            </div>
-          )}
 
           <form onSubmit={handleSubmit} style={styles.form}>
             <div style={styles.formGroup}>
@@ -508,15 +643,21 @@ const ContactPage = () => {
                 placeholder="Enter your full name"
                 value={formData.name}
                 onChange={handleChange}
-                required
                 style={{
                   ...styles.input,
-                  ...(focusedInput === 'name' ? styles.inputFocused : {})
+                  ...(focusedInput === 'name' ? styles.inputFocused : {}),
+                  ...(errors.name ? styles.inputError : {})
                 }}
                 onFocus={() => setFocusedInput('name')}
                 onBlur={() => setFocusedInput(null)}
                 disabled={loading}
               />
+              {errors.name && (
+                <div style={styles.errorMessage}>
+                  <span>⚠️</span>
+                  {errors.name}
+                </div>
+              )}
             </div>
 
             <div style={styles.formGroup}>
@@ -527,15 +668,21 @@ const ContactPage = () => {
                 placeholder="Enter your email address"
                 value={formData.email}
                 onChange={handleChange}
-                required
                 style={{
                   ...styles.input,
-                  ...(focusedInput === 'email' ? styles.inputFocused : {})
+                  ...(focusedInput === 'email' ? styles.inputFocused : {}),
+                  ...(errors.email ? styles.inputError : {})
                 }}
                 onFocus={() => setFocusedInput('email')}
                 onBlur={() => setFocusedInput(null)}
                 disabled={loading}
               />
+              {errors.email && (
+                <div style={styles.errorMessage}>
+                  <span>⚠️</span>
+                  {errors.email}
+                </div>
+              )}
             </div>
 
             <div style={styles.formGroup}>
@@ -543,18 +690,30 @@ const ContactPage = () => {
               <input
                 name="number"
                 type="tel"
-                placeholder="+94 77 123 4567"
+                placeholder="Enter 10-digit number"
                 value={formData.number}
                 onChange={handleChange}
-                required
                 style={{
                   ...styles.input,
-                  ...(focusedInput === 'number' ? styles.inputFocused : {})
+                  ...(focusedInput === 'number' ? styles.inputFocused : {}),
+                  ...(errors.number ? styles.inputError : {})
                 }}
                 onFocus={() => setFocusedInput('number')}
                 onBlur={() => setFocusedInput(null)}
                 disabled={loading}
+                maxLength="10"
               />
+              {errors.number && (
+                <div style={styles.errorMessage}>
+                  <span>⚠️</span>
+                  {errors.number}
+                </div>
+              )}
+              {formData.number && !errors.number && (
+                <div style={styles.charCount}>
+                  {formData.number.length}/10 digits
+                </div>
+              )}
             </div>
 
             <div style={styles.formGroup}>
@@ -564,15 +723,26 @@ const ContactPage = () => {
                 placeholder="Tell us how we can help you..."
                 value={formData.message}
                 onChange={handleChange}
-                required
                 style={{
                   ...styles.textarea,
-                  ...(focusedInput === 'message' ? styles.inputFocused : {})
+                  ...(focusedInput === 'message' ? styles.inputFocused : {}),
+                  ...(errors.message ? styles.inputError : {})
                 }}
                 onFocus={() => setFocusedInput('message')}
                 onBlur={() => setFocusedInput(null)}
                 disabled={loading}
               ></textarea>
+              {errors.message && (
+                <div style={styles.errorMessage}>
+                  <span>⚠️</span>
+                  {errors.message}
+                </div>
+              )}
+              {formData.message && (
+                <div style={styles.charCount}>
+                  {formData.message.length} characters
+                </div>
+              )}
             </div>
 
             <button 
@@ -682,6 +852,17 @@ const ContactPage = () => {
           @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+          }
+          
+          @keyframes slideInRight {
+            from {
+              opacity: 0;
+              transform: translateX(100px);
+            }
+            to {
+              opacity: 1;
+              transform: translateX(0);
+            }
           }
           
           @media (max-width: 768px) {

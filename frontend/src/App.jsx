@@ -39,6 +39,9 @@ import UserControl from "./pages/UserControl";
 import CustomerControl from "./pages/CustomerControl";
 import ProductsPage from "./pages/ProductsPage";
 import FavoritesPage from "./pages/FavoritesPage";
+import ChangeCredentials from "./pages/ChangeCredentials";
+import AddInternalUser from "./pages/AddInternalUser";
+import AttendancePage from "./pages/AttendanceManagement";
 
 // Layout wrapper for Navigation Pages
 const NavigationLayout = ({ children }) => {
@@ -287,6 +290,15 @@ const App = () => {
           }
         />
         <Route
+          path="/settings/credentials"
+          element={
+            <NavigationLayout>
+              <ChangeCredentials />
+            </NavigationLayout>
+          }
+        />
+
+        <Route
           path="/shipments/create"
           element={
             <NavigationLayout>
@@ -331,6 +343,22 @@ const App = () => {
           element={
             <NavigationLayout>
               <DeliveryUpdatePage />
+            </NavigationLayout>
+          }
+        />
+        <Route
+        path="/admin/internal-users/add"
+        element={
+          <NavigationLayout>
+            <AddInternalUser />
+          </NavigationLayout>
+        }
+        />
+        <Route
+          path="/admin/attendance"
+          element={
+            <NavigationLayout>
+              <AttendancePage />
             </NavigationLayout>
           }
         />

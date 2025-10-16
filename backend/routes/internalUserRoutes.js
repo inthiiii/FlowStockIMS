@@ -1,0 +1,10 @@
+import { Router } from 'express';
+import { createUser, listUsers, getUser, updateUser, deleteUser, searchUsers} from '../controllers/internalUserController.js';
+const r = Router();
+r.get('/', listUsers);
+r.post('/', createUser);
+r.get('/:id', getUser);
+r.put('/:id', updateUser);
+r.delete('/:id', deleteUser);
+r.get('/search', searchUsers); 
+export default r;

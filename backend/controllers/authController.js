@@ -47,6 +47,16 @@ export const login = async (req, res) => {
   }
 };
 
+export const me = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-passwordHash -resetPasswordToken -resetPasswordExpires');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    return res.json(user);
+  } catch (err) {
+    return res.status(500).json({ message: 'Server error' });
+  }
+};
+
 export const listUsers = async (_req, res) => {
   try {
     const users = await User.find({}, '-passwordHash -resetPasswordToken -resetPasswordExpires');
@@ -79,6 +89,51 @@ export const deleteUser = async (req, res) => {
     if (!deleted) return res.status(404).json({ message: 'User not found' });
     return res.json({ message: 'User deleted' });
   } catch (err) {
+    return res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Update currently authenticated user's credentials (email, names, phone, password)
+export const changeCredentials = async (req, res) => {
+  try {
+    const userId = req.user?.id || req.body.id;
+    if (!userId) return res.status(400).json({ message: 'User id is required' });
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const { firstName, lastName, phone, email, currentPassword, newPassword } = req.body;
+
+    if (email) {
+      const exists = await User.findOne({ email: email.toLowerCase(), _id: { $ne: user._id } });
+      if (exists) return res.status(409).json({ message: 'Email already in use' });
+      user.email = email.toLowerCase();
+    }
+
+    if (firstName !== undefined) user.firstName = firstName;
+    if (lastName !== undefined) user.lastName = lastName;
+    if (phone !== undefined) user.phone = phone;
+
+    if (newPassword) {
+      // Verify current password before changing
+      if (!currentPassword) return res.status(400).json({ message: 'Current password is required to change password' });
+      const ok = await user.comparePassword(currentPassword);
+      if (!ok) return res.status(401).json({ message: 'Current password is incorrect' });
+
+      // Reuse same policy as reset: exactly 6 chars, 1 uppercase, 1 number, 1 special
+      const strongRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{6}$/;
+      if (!strongRegex.test(newPassword)) {
+        return res.status(400).json({ message: 'Password must be exactly 6 characters and include 1 uppercase letter, 1 number, and 1 special character' });
+      }
+      const passwordHash = await bcrypt.hash(newPassword, 10);
+      user.passwordHash = passwordHash;
+    }
+
+    await user.save();
+
+    return res.json({ id: user._id, email: user.email, role: user.role, firstName: user.firstName, lastName: user.lastName, phone: user.phone });
+  } catch (err) {
+    console.error('changeCredentials error', err);
     return res.status(500).json({ message: 'Server error' });
   }
 };

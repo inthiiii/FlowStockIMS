@@ -12,6 +12,8 @@ import shipmentRoutes from "./routes/shipmentRoutes.js";
 import emailRoutes from "./routes/emailRoutes.js";
 import deliveryRoutes from "./routes/deliveryRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
+import internalUserRoutes from "./routes/internalUserRoutes.js";
+import attendanceRoutes from "./routes/attendanceRoutes.js";
 
 dotenv.config();
 
@@ -38,6 +40,8 @@ app.use("/api/contact", contactRoutes);
 app.use("/api/shipments", shipmentRoutes);
 app.use("/api/deliveries", deliveryRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/internal-users", internalUserRoutes);  
+app.use("/api/attendance", attendanceRoutes);
 
 // Root endpoint
 app.get("/", (req, res) => {

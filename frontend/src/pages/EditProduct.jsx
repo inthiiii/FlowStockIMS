@@ -1,7 +1,7 @@
 // src/pages/EditProduct.jsx
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import api from "../api.js"; // Using the centralized api instance
+import api, { toPublicUrl } from "../api.js"; // Using the centralized api instance
 
 const EditProduct = () => {
   const { id } = useParams();
@@ -40,7 +40,7 @@ const EditProduct = () => {
           modelName: data.modelName,
           image: null, // Reset image on load
         });
-        setPreview(data.image); // The full URL should be handled by the api instance or constructed here
+        setPreview(toPublicUrl(data.image));
         setError("");
       } catch (err) {
         console.error("Error fetching product:", err);

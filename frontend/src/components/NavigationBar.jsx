@@ -427,23 +427,12 @@ const NavigationBar = () => {
           <MenuItem
             icon="👥"
             label="Internal Users"
-            hasSubmenu
-            isExpanded={expandedMenus.users}
-            onClick={() => toggleSubmenu('users')}
+            
+            onClick={() => handleNavClick("/admin/internal-users/add")}
           />
-          <div style={{
-            ...styles.submenu,
-            ...(expandedMenus.users && styles.submenuExpanded)
-          }}>
-            <SubMenuItem
-              label="Add User"
-              onClick={() => handleNavClick("/internal-users/add")}
-            />
-            <SubMenuItem
-              label="Attendance"
-              onClick={() => handleNavClick("/attendance")}
-            />
-          </div>
+          
+            
+          
 
           {/* User Dashboard */}
           <MenuItem
@@ -457,6 +446,7 @@ const NavigationBar = () => {
             ...styles.submenu,
             ...(expandedMenus.userDashboard && styles.submenuExpanded)
           }}>
+            
             <SubMenuItem
               label="User Control"
               onClick={() => handleNavClick("/user/control")}
@@ -466,6 +456,13 @@ const NavigationBar = () => {
               onClick={() => handleNavClick("/user/customers")}
             />
           </div>
+
+          {/* Attendance */}
+          <MenuItem
+            icon="🗓️"
+            label="Attendance"
+            onClick={() => handleNavClick("/admin/attendance")}
+          />
 
           {/* Settings */}
           <MenuItem
@@ -482,10 +479,6 @@ const NavigationBar = () => {
             <SubMenuItem
               label="Change Credentials"
               onClick={() => handleNavClick("/settings/credentials")}
-            />
-            <SubMenuItem
-              label="Change Password"
-              onClick={() => handleNavClick("/settings/password")}
             />
           </div>
         </div>

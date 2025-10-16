@@ -1,7 +1,7 @@
 // src/components/ProductCard.jsx
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import api from "../api";
+import api, { toPublicUrl } from "../api";
 
 export default function ProductCard({ product, onUpdated, onToggleFavorite }) {
   const [notifyLoading, setNotifyLoading] = useState(false);
@@ -159,7 +159,7 @@ export default function ProductCard({ product, onUpdated, onToggleFavorite }) {
     <div style={styles.card}>
       <div style={styles.topSection}>
         <img
-          src={product.image || "https://via.placeholder.com/120"}
+          src={product.image ? toPublicUrl(product.image) : "https://via.placeholder.com/120"}
           alt={product.productName}
           style={styles.image}
         />
